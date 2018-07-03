@@ -1,0 +1,28 @@
+----
+TODO
+----
+
+1. add function for AR(p) (nested by VAR(p))
+2. add function for SVAR(p) data creation
+3. consider coherent naming scheme -> would involve renaming... :-/
+4. add tests for AR(p) and SVAR(p)
+5. write custom code for LR test; test; compare to vars package
+6. port code from legacy package on graphical criteria -> function to implement test
+
+4. documentation missing: description of function and paramters
+5. example cannot run successfully; problem with network drive?
+6. need to declare imports??
+  "Consider adding
+  importFrom("graphics", "abline", "plot")
+  importFrom("stats", "embed", "logLik", "pchisq", "qchisq", "quantile")"
+7. covr() not running on windows machine -> try linux
+8.port code from mcs project -> forecasts + forecast evaluation of AR(p) processes
+
+----
+DONE
+----
+
+### 2018-07-03
+
+* ported code from legacy package and stripped off unnecessary parts
+
