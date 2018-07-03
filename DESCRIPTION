@@ -1,0 +1,14 @@
+Package: zeitreihe
+Title: Simulate, Estimate, Select, and Forecast Multiple Time Series Processes
+Version: 0.0.0.9000
+Authors@R: person("Niels", "Aka", email = "nielsaka@outlook.com", role = c("aut", "cre"))
+Description: 
+  The package provides a (random) collection of functions that are
+  useful when analysing multivariate and univariate time series. It does not aim
+  at completeness. Instead, the package is a byproduct of my work. Its contents 
+  is driven by whatever I felt necessary to implement myself.
+Depends: R (>= 3.3.0)
+Suggests: testthat
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true

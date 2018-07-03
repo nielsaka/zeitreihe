@@ -1,0 +1,278 @@
+###############################################################################.
+#' Cholesky Decomposition
+#'
+#' Cholesky decomposition of a positive-definite matrix using the
+#' Cholesky-Banachiewicz algorithm.
+#'
+#' @param A A matrix, must be positive definite. If not, an error will be
+#'   thrown.
+#'
+#' @return A matrix, the 'square root' of matrix \code{A}, as in \eqn{A =
+#'   LL^{T}}{A = LL'}. IS IT L or L'?
+#' @export
+chol_decomp <- function(A) {
+  if (!isSymmetric(A)) stop("error: matrix not symmetric")
+  L <- A
+  L[, ] <- 0
+
+  n <- dim(A)[1]
+  for (i in seq_len(n)) {
+    for (j in seq_len(i)) {
+      zz <- A[i, j]
+      for (k in seq_len(j - 1)) {
+        zz <- zz - L[i, k] * L[j, k]
+      }
+      if (i == j) {
+        if (is.nan(rr <- sqrt(zz))) stop("matrix not positive definite")
+        L[i, j] <- rr
+      }
+      else {
+        L[i, j] <- zz / L[j, j]
+      }
+    }
+  }
+  L
+}
+###############################################################################.
+# Matrix Inversion of lower triangular matrix
+# using simple sequential equation solving
+invLT <- function(L) {
+  X <- L; X[, ] <- 0
+  n <- dim(L)[1]
+  I <- diag(rep(1, n))
+
+  for (row in seq_len(n)) {
+    for (col in seq_len(row)) {
+      zz <- I[row, col]
+      for (k in seq_len(row - 1)) {
+        zz <- zz - L[row, k] * X[k, col]
+      }
+      X[row, col] <- zz / L[row, row]
+    }
+  }
+  X
+}
+###############################################################################.
+# Matrix inversion of symmetric, pos.def. matrix
+invSPD <- function(A) {
+  L     <- chol_decomp(A)
+  L.inv <- invLT(L)
+  t(L.inv) %*% L.inv
+}
+###############################################################################.
+#' # Moving Average Coefficients
+#'
+#' @param A A matrix.
+#' @param h An integer.
+#'
+#' @return
+#' @export
+MA_coeffs <- function(A, h){
+  K <- nrow(A)
+  p <- ncol(A) / K
+  if (p > 1 & p %% 1 == 0) {
+    A.large <- rbind(A[, 1:(K * (p - 1))], diag(K * (p - 1)))
+    A.large <- cbind(A.large, rbind(A[, (K * (p - 1) + 1):(K * p)],
+                                    matrix(0, K * (p - 1), K)))
+    J <- cbind(diag(K), matrix(0, K, K * (p - 1) ))
+  } else if (p == 1) {
+    A.large <- A
+    J       <- diag(K)
+  } else {
+    stop("lag length not well defined")
+  }
+  PHI <- array(, dim = c(K, K, h + 1))
+  A.large.iter <- diag(K*p)
+  for (i in seq_len(h + 1)) {
+    PHI[, , i] <- J %*% A.large.iter %*% t(J)
+    A.large.iter <- A.large.iter %*% A.large
+  }
+  PHI
+}
+###############################################################################.
+#' structural moving average coefficients
+#'
+#' @param PHI
+#' @param B
+#'
+#' @return
+#' @export
+#'
+#' @examples
+sMA_coeffs <- function(PHI, B) {
+  h <- dim(PHI)[3]
+  THETA <- PHI
+  for (i in seq_len(h)) {
+    THETA[, , i] <- PHI[, , i] %*% B
+  }
+  if (!is.null(dimnames(B))) {
+    dimnames(THETA) <- c(dimnames(B), list(seq_len(h) - 1))
+  }
+  THETA
+}
+###############################################################################.
+#' Multivariate ordinary least squares
+#'
+#' Multivariate ordinary least squares (<=> equation-wise ols)
+#'
+#' @param data A matrix, ..
+#' @param p An integer, the largest lag.
+#'
+#' @return A list with four components \code{BETA.hat}, \code{SIGMA.hat},
+#'   \code{U.hat}, and \code{std.err}. The first three are vectors, the last
+#'   component is a scalar.
+#'
+#'   \code{BETA.hat} contains the coefficient estimates, ...
+#' @export
+ols_mv <- function(data, p) {
+  K <- ncol(data)
+  Kp <- K * p
+  N <- nrow(data)
+  Y.all <- t(data)
+  Y     <- Y.all[, -seq_len(p)]
+  row.names <- c("const")
+  if (!is.null(rownames(Y))) {
+    for (i in seq_len(p)) {
+      row.names <- c(row.names, paste0(rownames(Y), ".l", i))
+    }
+  } else {
+    row.names <- NULL
+  }
+  if (p > 0) {
+    Z <- rbind(1, t(embed(t(Y.all), p))[, 1:(N - p)])
+  } else {
+    Z <- rep(1, N - p)
+  }
+  rownames(Z) <- row.names
+  ZZ.inv <- invSPD(Z %*% t(Z))
+  BETA.hat  <- Y %*% t(Z) %*% ZZ.inv
+  U.hat <- Y - BETA.hat %*% Z
+  SIGMA.hat <- U.hat %*% t(U.hat) / (N - p - Kp - 1)
+  sigma.beta.hat <- ZZ.inv %x% SIGMA.hat
+  sb.hat <- matrix(, K, Kp + 1)
+  for (i in seq_len(K)) {
+    sb.hat[i, ] <- sqrt(diag(sigma.beta.hat))[seq(i, (Kp + 1) * K, K)]
+  }
+  dimnames(sb.hat) <- dimnames(BETA.hat)
+
+  list(BETA.hat = BETA.hat, SIGMA.hat = SIGMA.hat, U.hat = U.hat,
+       std.err = sb.hat)
+}
+###############################################################################.
+#' Hall's percentile interval bootstrap
+#'
+#' @param data
+#' @param p
+#' @param h
+#' @param alpha
+#' @param reps
+#'
+#' @return
+#' @export
+#'
+#' @examples
+sMA_CI <- function(data, p, h, alpha, reps) {
+  K     <- ncol(data)
+  N.all <- nrow(data)
+  N.est <- N.all - p
+  Y.pre    <- t(data)[, seq_len(p)]
+
+  VAR.hat   <- ols_mv(data, p)
+  U.hat     <- VAR.hat$U.hat
+  BETA.hat  <- VAR.hat$BETA.hat
+  B.hat     <- chol_decomp(VAR.hat$SIGMA.hat)
+  PHI.hat   <- MA_coeffs(VAR.hat$BETA.hat[, -1], h)
+  THETA.hat <- sMA_coeffs(PHI.hat, B.hat)
+
+  U.hat.demean <- (U.hat - rowMeans(U.hat))
+  Y.boot <- matrix(, K, N.all)
+
+  THETA.boot <- array(, c(K, K, h + 1, reps))
+
+  for (r in seq_len(reps)) {
+    Y.boot[, seq_len(p)] <- Y.pre
+    U.boot <- U.hat.demean[, sample(1:N.est, replace = TRUE)]
+    if (is.matrix(Y.pre)) {
+      Z.iter <- c(1, as.vector(Y.pre[, rev(seq_len(p))]))
+    } else {
+      Z.iter <- c(1, Y.pre)
+    }
+    for (i in seq_len(N.est)) {
+      Y.boot[, p + i] <- BETA.hat %*% Z.iter + U.boot[, i]
+      Z.iter <- c(1, as.vector(Y.boot[, rev(i + seq_len(p))]))
+    }
+    VAR.boot            <- ols_mv(t(Y.boot), p)
+    B.boot              <- chol_decomp(VAR.boot$SIGMA.hat)
+    PHI.boot            <- MA_coeffs(VAR.boot$BETA.hat[, -1], h)
+    THETA.boot[, , , r] <- sMA_coeffs(PHI.boot, B.boot) - THETA.hat
+  }
+
+  IR.CI.upper <- THETA.hat - apply(THETA.boot, c(1, 2, 3), quantile,
+                                   probs = alpha/2)
+  IR.CI.lower <- THETA.hat - apply(THETA.boot, c(1, 2, 3), quantile,
+                                   probs = 1 - alpha/2)
+  if (is.null(dimnames(IR.CI.lower))) {
+    dimnames(IR.CI.upper) <- c(dimnames(B.hat), list(seq_len(h) - 1))
+    dimnames(IR.CI.lower) <- c(dimnames(B.hat), list(seq_len(h) - 1))
+  }
+  IR.CI <- rbind(cbind(as.data.frame.table(IR.CI.upper), bound = "upper"),
+                 cbind(as.data.frame.table(IR.CI.lower), bound = "lower"))
+  colnames(IR.CI) <- c("Variable", "Shock", "h", "value", "bound")
+  IR.CI$h <- as.numeric(levels(IR.CI$h))[IR.CI$h]
+  IR.CI
+}
+###############################################################################.
+# Forecast error variance decomposition
+FEVD <- function(THETA) {
+  h <- dim(THETA)[3]
+  K <- dim(THETA)[1]
+  THETA_outer_sum   <- matrix(0, K, K)
+  THETA_elem.sq_sum <- matrix(0, K, K)
+  out <- THETA
+  for (j in seq_len(h)) {
+    THETA_outer_sum   <- THETA_outer_sum   + THETA[, , j] %*% t(THETA[, , j])
+    THETA_elem.sq_sum <- THETA_elem.sq_sum + THETA[, , j] ^ 2
+    out[, , j] <- THETA_elem.sq_sum / diag(THETA_outer_sum)
+  }
+  out.long <- as.data.frame.table(out)
+  colnames(out.long) <- c("Variable", "Shock", "h", "value")
+  out.long$h <- as.numeric(levels(out.long$h))[out.long$h]
+  out.long
+}
+###############################################################################.
+##############################################################################.
+#### Tests ----
+##############################################################################.
+# print results from unit root tests to latex table format
+
+
+# sequential LM tests for lag selection
+VAR.Seq.test <- function(data, M, alpha) {
+  K <- ncol(data)
+  LR <- numeric(0)
+  for (p in M:2) {
+    M.large <- VAR(data, p = p)
+    M.small <- VAR(data[-1, ], p = p - 1)
+    LR <- c(LR, nrow(M.large$datamat) * (logLik(M.large) - logLik(M.small)))
+  }
+  p <- max((M:2)[LR > qchisq(1 - alpha, K ^ 2)], 1)
+  list(lag.length = p, p.vals = 1 - pchisq(LR, K ^ 2))
+}
+
+# Wrap tests for serial correlation and plot p-values
+SerCorr <- function(var.model, p.max, alpha = 0.05, title = "") {
+  SC.pvals <- matrix(, p.max, 2)
+  for (p in 1:p.max) {
+    ## Portmanteau Test
+    SC.pvals[p, 1] <- serial.test(var.model, lags.pt = p,
+                                  type = "PT.adjusted")$serial$p.value
+    ## Breusch-Godfrey Test
+    SC.pvals[p, 2] <- serial.test(var.model, lags.bg = p,
+                                  type = "BG")$serial$p.value
+  }
+  # DO NOT USE PORTMANTEAU WHEN UNCERTAIN ABOUT I(1)!!
+  # plot(SC.pvals[, 1], main = "Portmanteau Test",
+  # ylab = "p-values", xlab = "Horizon"); abline(h = alpha)
+  plot(SC.pvals[, 2], main = title,
+       ylab = "p-values", xlab = "Lag Length"); abline(h = alpha)
+}
