@@ -13,10 +13,10 @@ ols_mv(data, p)
 }
 \value{
 A list with four components \code{BETA.hat}, \code{SIGMA.hat},
-  \code{U.hat}, and \code{std.err}. The first three are vectors, the last
-  component is a scalar.
+\code{U.hat}, and \code{std.err}. The first three are vectors, the last
+component is a scalar.
 
-  \code{BETA.hat} contains the coefficient estimates, ...
+\code{BETA.hat} contains the coefficient estimates, ...
 }
 \description{
 Multivariate ordinary least squares (<=> equation-wise ols)

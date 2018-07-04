@@ -60,7 +60,7 @@ invSPD <- function(A) {
   t(L.inv) %*% L.inv
 }
 ###############################################################################.
-#' # Moving Average Coefficients
+#' Moving Average Coefficients
 #'
 #' @param A A matrix.
 #' @param h An integer.

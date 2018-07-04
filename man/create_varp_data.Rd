@@ -15,7 +15,7 @@ create_varp_data(B, Z_0, UU)
 }
 \value{
 A (K x T) matrix of observables. The first columns will be equal to
-  \code{Z_0}. The final observation of the K variables will be in column T.
+\code{Z_0}. The final observation of the K variables will be in column T.
 }
 \description{
 Given some starting values, coefficients and a sequence of error vectors,
@@ -24,7 +24,7 @@ vector autoregressive model of order p.
 }
 \section{Note}{
  For a faster implementation, see
-  \href{http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/}{this
-   solution} by Dirk Eddelbuettel.
+\href{http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/}{this
+solution} by Dirk Eddelbuettel.
 }
 

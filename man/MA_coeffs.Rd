@@ -2,7 +2,7 @@
 % Please edit documentation in R/VAR-2-estimation.R
 \name{MA_coeffs}
 \alias{MA_coeffs}
-\title{# Moving Average Coefficients}
+\title{Moving Average Coefficients}
 \usage{
 MA_coeffs(A, h)
 }
@@ -12,5 +12,5 @@ MA_coeffs(A, h)
 \item{h}{An integer.}
 }
 \description{
-# Moving Average Coefficients
+Moving Average Coefficients
 }
