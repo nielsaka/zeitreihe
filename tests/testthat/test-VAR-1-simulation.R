@@ -1,5 +1,20 @@
 context("Testing data creation")
 
+
+test_that("AR(p) works", {
+  #############################################################################.
+  # basic test
+  set.seed(8191)
+  a <- c(0.7, -0.3, 0.2)
+  ee <- rnorm(100)
+  y_0 <-c(0, 0, 0)
+
+  expect_equal_to_reference(create_arp_data(a, y_0, ee), "arp_data.rds")
+
+  ee <- c(rnorm(100), rep(0, 1000))
+  expect_equal(tail(create_arp_data(a, y_0, ee), 100), rep(0, 100))
+})
+
 test_that("VAR(1) works", {
   #############################################################################.
   # basic test

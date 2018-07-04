@@ -1,9 +1,27 @@
 ###############################################################################.
 #' Create data using an AR(1)
 #'
-#' nested by VAR(1)
+#' Given some starting values, coefficients and a sequence of error vectors,
+#' \code{create_arp_data} will compute a sequence of observables through a
+#'univariate autoregressive model.
 #'
+#'@param a    A numeric vector. It specifies the lag coefficients and its length
+#'  will determine the maximum lag order \eqn{p}.
+#'@param y0   A numeric vector. It provides pre-sample observations and its length
+#'  must be at minimum \eqn{p} (see above).
+#'@param e    A numeric vector. It contains the innovations that hit the system. If
+#'  unspecified, it will draw from a standard normal distribution.
+#'@param N    An integer scalar. The sample size. Defaults to `N = 100`.
+# @param intercept A logical scalar. If the first entry of `a` is the value of
+#   the intercept, set to `TRUE`. Otherwise leave at `FALSE`.
+#'@return An numeric vector of length `N`.
+create_arp_data <- function(a, y0, e = rnorm(N), N = 100, intercept = FALSE) {
+  B <- t(as.matrix(a))
+  Y_0 <- t(as.matrix(y0))
+  EE <- t(as.matrix(e))
 
+  as.vector(create_varp_data(B, Y_0, EE))
+}
 ###############################################################################.
 #' Create data using a VAR(1)
 #'

@@ -2,7 +2,7 @@
 % Please edit documentation in R/VAR-1-simulation.R
 \name{create_var1_data}
 \alias{create_var1_data}
-\title{Create data using an AR(1)}
+\title{Create data using a VAR(1)}
 \usage{
 create_var1_data(A, Y_0, EE)
 }
@@ -17,21 +17,16 @@ values.}
 \value{
 A (K x T) matrix of observables. The first column will equal \code{A
   \%*\% Y_0 + EE[, 1]}. The final observation of the K variables will be in
-  column T.
+column T.
 }
 \description{
-nested by VAR(1)
-}
-\details{
-Create data using a VAR(1)
-
 Given some starting values, coefficients and a sequence of error vectors,
 \code{create_var1_data} will compute a sequence of observables according to a
 vector autoregressive model of order one.
 }
 \section{Note}{
  For a faster implementation, see
-  \href{http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/}{this
-   solution} by Dirk Eddelbuettel.
+\href{http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/}{this
+solution} by Dirk Eddelbuettel.
 }
 
