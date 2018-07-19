@@ -6,7 +6,7 @@ test_that("AR(p) works", {
   # basic test
   set.seed(8191)
   a <- c(0.7, -0.3, 0.2)
-  ee <- rnorm(100)
+  ee <- rnorm(100)[-(1:3)] # legacy: first p residuals used to be ignored
   y_0 <-c(0, 0, 0)
 
   expect_equal_to_reference(create_arp_data(a, y_0, ee), "arp_data.rds")
@@ -24,7 +24,7 @@ test_that("VAR(1) works", {
 
   expect_equivalent(
     create_var1_data(A, Y_0, EE),
-    matrix(c(20, 11.5), ncol = 1)
+    cbind(Y_0, matrix(c(20, 11.5), ncol = 1))
     )
 
   #############################################################################.
@@ -49,7 +49,7 @@ test_that("VAR(1) works", {
   expect_identical(
   tt <- create_var1_data(A, Y_0, EE),
   # create_varp_data includes starting values in return
-  pp <- create_varp_data(B = A, Z_0 = Y_0, UU = EE)[,-1]
+  pp <- create_varp_data(B = A, Z_0 = Y_0, UU = EE)
   )
 
 })
@@ -64,14 +64,15 @@ test_that("Var(p) works", {
   Y_0 <- matrix(0, K, 1)
   Z_0 <- matrix(0, K, 2)
 
-  out_var1 <- create_var1_data(B1, Y_0, UU[, -(1:2)])
-  out_varp <- create_varp_data(B, Z_0, UU)
-  expect_equal(sum(out_varp[, -(1:2)] - out_var1), 0)
+  out_var1 <- create_var1_data(B1, Y_0, UU)
+  out_varp <- create_varp_data(B, Z_0, UU)[, -1]
+  expect_equal(sum(out_varp - out_var1), 0)
 
   B2 <- matrix(0.05, K, K); diag(B2) <- 0.1
   B  <- cbind(B1, B2)
   out <- create_varp_data(B, Z_0, UU)
-  expect_equivalent(out[1, 4, drop = FALSE], UU[, 3] %*% B[, 1] + UU[1, 4])
+  # compute the second element by hand
+  expect_equivalent(out[1, 4, drop = FALSE], UU[, 1] %*% B[, 1] + UU[1, 2])
 
   #############################################################################.
   # will it converge to uncond. mean (= zero), when stationary?
