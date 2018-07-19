@@ -1,7 +1,7 @@
 ----
 TODO
 ----
-
+1. nest VAR(1) in VAR(p) -> test comparison of both and delete VAR(1)
 2. add function for SVAR(p) data creation
 3. consider coherent naming scheme -> would involve renaming... :-/
 4. add tests for AR(p) and SVAR(p)

@@ -71,11 +71,11 @@ create_varp_data <- function(B, Z_0, UU) {
   p <- ncol(B) / K
   Tt <- ncol(UU)
 
-  YY <- matrix(, ncol = Tt, nrow = K)
+  YY <- matrix(, ncol = Tt + 1, nrow = K)
   rownames(YY) <- paste0("y", seq_len(K))
-  YY[, 1:p] <- Z_0
-  for (t in p:(Tt - 1)) {
-    YY[, t + 1] = B %*% as.vector(YY[, t:(t-p+1)]) + UU[, t + 1]
+  YY[, 1:p] <- Z_0 # TODO: test that error thrown if size of Z_0 wrong
+  for (t in p:Tt) {
+    YY[, t + 1] = B %*% as.vector(YY[, t:(t-p+1)]) + UU[, t]
   }
   return(YY)
 }

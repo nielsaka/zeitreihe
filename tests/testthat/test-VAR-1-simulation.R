@@ -29,6 +29,7 @@ test_that("VAR(1) works", {
 
   #############################################################################.
   # will it converge to uncond. mean (= zero), when stationary?
+  set.seed(9988)
   n <- 1E4
   K <- 5
   A <- matrix(0.05, K, K)
@@ -41,6 +42,16 @@ test_that("VAR(1) works", {
     create_var1_data(A, Y_0, EE)[, n], # takes nearly 1000 obs !
     c(y1 = 0, y2 = 0, y3 = 0, y4 = 0, y5 = 0)
   )
+  #############################################################################.
+  # is it equivalent to VAR(p) ?
+  EE <- EE[, 1:10]
+
+  expect_identical(
+  tt <- create_var1_data(A, Y_0, EE),
+  # create_varp_data includes starting values in return
+  pp <- create_varp_data(B = A, Z_0 = Y_0, UU = EE)[,-1]
+  )
+
 })
 test_that("Var(p) works", {
   set.seed(15)
