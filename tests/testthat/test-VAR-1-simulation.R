@@ -81,12 +81,61 @@ test_that("Var(p) works", {
   B1 <- matrix(0.2, K, K); diag(B1) <- 0.4
   B2 <- matrix(0.04, K, K); diag(B2) <- 0.09
   B <- cbind(B1, B2)
+  p <- ncol(B) / K
   UU <- matrix(0, K, n)
   UU[, seq_len(n - 1E3)] <- rnorm(K * (n - 1E3))
-  Z_0 <- matrix(50, K, 2)
+  Z_0 <- matrix(50, K, p)
 
   expect_equal(
     create_varp_data(B, Z_0, UU)[, n],
     c(y1 = 0, y2 = 0, y3 = 0)
   )
+  #############################################################################.
+  # check error if Z_0 wrong
+  expect_error_lang <- function(..., lang = "EN") {
+    Sys.setenv("LANGUAGE" = lang)
+    expect_error(...)
+    Sys.unsetenv("LANGUAGE")
+  }
+
+  K <- 3
+  p <- 2
+
+  B   <- matrix(0.2, K, K * p); diag(B) <- 0.4
+
+  Z_0 <- matrix(50, K, p + 1)
+  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
+  Z_0 <- matrix(50, K + 1, p)
+  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
+
+  # TODO silently recycling... !
+  Z_0 <- c(50, 50)
+  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
+
+
+  K <- 1
+  p <- 2
+
+  B   <- matrix(0.2, K, K * p); diag(B) <- 0.4
+
+  Z_0 <- matrix(50, K, p + 1)
+  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
+  Z_0 <- matrix(50, K + 1, p)
+  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
+
+  K <- 1
+  p <- 1
+
+  B   <- matrix(0.2, K, K * p); diag(B) <- 0.4
+
+  Z_0 <- matrix(50, K, p + 1)
+  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
+  Z_0 <- matrix(50, K + 1, p)
+  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
+  Z_0 <- c(matrix(50, K, p + 1))
+  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
+  Z_0 <- c(matrix(50, K + 1, p))
+  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
+
+
 })
