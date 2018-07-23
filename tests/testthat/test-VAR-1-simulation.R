@@ -92,11 +92,21 @@ test_that("Var(p) works", {
   )
   #############################################################################.
   # check error if Z_0 wrong
-  expect_error_lang <- function(..., lang = "EN") {
-    Sys.setenv("LANGUAGE" = lang)
-    expect_error(...)
-    Sys.unsetenv("LANGUAGE")
+  init_error_lang <- function(lang = "EN") {
+    first_lang <- lang
+    function(..., lang = first_lang) {
+      # unsetting only works on windows machines
+      if (Sys.info()[["sysname"]] != "Window" && first_lang != lang) {
+        # or .Platform$OS.type == "windows"
+        warning(paste("May not be able to change language again",
+                      "on this operating system."))
+      }
+      Sys.setenv("LANGUAGE" = lang)
+      expect_error(...)
+      Sys.unsetenv("LANGUAGE")
+    }
   }
+  expect_error_lang <- init_error_lang()
 
   K <- 3
   p <- 2
