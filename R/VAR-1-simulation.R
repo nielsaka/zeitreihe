@@ -73,8 +73,11 @@ create_varp_data <- function(B, Z_0, UU) {
 
   YY <- matrix(, ncol = Tt + p, nrow = K)
   rownames(YY) <- paste0("y", seq_len(K))
-  YY[, 1:p] <- Z_0 # TODO: test that error thrown if size of Z_0 wrong
+  Z_0 <- as.matrix(Z_0)
+  stopifnot(dim(Z_0)[1] == K && dim(Z_0)[2] == p)
+  YY[, 1:p] <- Z_0
   for (t in 1:Tt) {
+    # Alternatively, just use companion form. Indexing is even simpler.
     YY[, t + p] = B %*% as.vector(YY[, (t+p-1):t]) + UU[, t]
   }
   return(YY)
