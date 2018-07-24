@@ -92,60 +92,41 @@ test_that("Var(p) works", {
   )
   #############################################################################.
   # check error if Z_0 wrong
-  init_error_lang <- function(lang = "EN") {
-    first_lang <- lang
-    function(..., lang = first_lang) {
-      # unsetting only works on windows machines
-      if (Sys.info()[["sysname"]] != "Window" && first_lang != lang) {
-        # or .Platform$OS.type == "windows"
-        warning(paste("May not be able to change language again",
-                      "on this operating system."))
-      }
-      Sys.setenv("LANGUAGE" = lang)
-      expect_error(...)
-      Sys.unsetenv("LANGUAGE")
-    }
+
+  # # Not needed below
+  # Sys.setenv("LANGUAGE" = "EN")
+
+  # init_error_lang <- function(lang = "EN") {
+  #   first_lang <- lang
+  #   function(..., lang = first_lang) {
+  #     # unsetting only works on windows machines
+  #     if (Sys.info()[["sysname"]] != "Windows" && first_lang != lang) {
+  #       # or .Platform$OS.type == "windows"
+  #       warning(paste("May not be able to change language again",
+  #                     "on this operating system."))
+  #     }
+  #     Sys.setenv("LANGUAGE" = lang)
+  #     expect_error(...)
+  #     Sys.unsetenv("LANGUAGE")
+  #   }
+  # }
+
+  # expect_error_english_dim <- function(...){
+  #   expect_error_english <- init_error_lang()
+  #   expect_error_english(..., regexp = "dim(Z_0)[1] == K", fixed = TRUE)
+  # }
+
+  expect_error_dim <- function(...){
+    expect_error(..., regexp = "dim(Z_0)[1] == K", fixed = TRUE)
   }
-  expect_error_lang <- init_error_lang()
 
-  K <- 3
-  p <- 2
-
-  B   <- matrix(0.2, K, K * p); diag(B) <- 0.4
-
+  # Z_0 should have K rows and p columns
   Z_0 <- matrix(50, K, p + 1)
-  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
+  expect_error_dim(create_varp_data(B, Z_0, UU))
   Z_0 <- matrix(50, K + 1, p)
-  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
-
-  # TODO silently recycling... !
+  expect_error_dim(create_varp_data(B, Z_0, UU))
   Z_0 <- c(50, 50)
-  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
-
-
-  K <- 1
-  p <- 2
-
-  B   <- matrix(0.2, K, K * p); diag(B) <- 0.4
-
-  Z_0 <- matrix(50, K, p + 1)
-  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
-  Z_0 <- matrix(50, K + 1, p)
-  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
-
-  K <- 1
-  p <- 1
-
-  B   <- matrix(0.2, K, K * p); diag(B) <- 0.4
-
-  Z_0 <- matrix(50, K, p + 1)
-  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
-  Z_0 <- matrix(50, K + 1, p)
-  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
-  Z_0 <- c(matrix(50, K, p + 1))
-  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
-  Z_0 <- c(matrix(50, K + 1, p))
-  expect_error_lang(create_varp_data(B, Z_0, UU), regexp = "not a multiple of")
-
-
+  expect_error_dim(create_varp_data(B, Z_0, UU))
+  Z_0 <- array(50, dim = c(3, 2, 2))
+  expect_error_dim(create_varp_data(B, Z_0, UU))
 })
