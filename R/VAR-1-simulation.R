@@ -1,19 +1,19 @@
 ###############################################################################.
-#' Create data using an AR(1)
+#'Create data using an AR(1)
 #'
-#' Given some starting values, coefficients and a sequence of error vectors,
-#' \code{create_arp_data} will compute a sequence of observables through a
+#'Given some starting values, coefficients and a sequence of error vectors,
+#'\code{create_arp_data} will compute a sequence of observables through a
 #'univariate autoregressive model.
 #'
 #'@param a    A numeric vector. It specifies the lag coefficients and its length
 #'  will determine the maximum lag order \eqn{p}.
-#'@param y0   A numeric vector. It provides pre-sample observations and its length
-#'  must be at minimum \eqn{p} (see above).
-#'@param e    A numeric vector. It contains the innovations that hit the system. If
-#'  unspecified, it will draw from a standard normal distribution.
+#'@param y0   A numeric vector. It provides pre-sample observations and its
+#'  length must be at minimum \eqn{p} (see above).
+#'@param e    A numeric vector. It contains the innovations that hit the system.
+#'  If unspecified, it will draw from a standard normal distribution.
 #'@param N    An integer scalar. The sample size. Defaults to `N = 100`.
-# @param intercept A logical scalar. If the first entry of `a` is the value of
-#   the intercept, set to `TRUE`. Otherwise leave at `FALSE`.
+#'@param intercept A logical scalar. If the first entry of `a` is the value of
+#'  the intercept, set to `TRUE`. Otherwise leave at `FALSE`.
 #'@return An numeric vector of length `N`.
 create_arp_data <- function(a, y0, e = rnorm(N), N = 100, intercept = FALSE) {
   B <- t(as.matrix(a))
@@ -53,14 +53,18 @@ create_var1_data <- function(A, Y_0, EE) {
 #' Create data using a VAR(p)
 #'
 #' Given some starting values, coefficients and a sequence of error vectors,
-#' \code{create_varp_data} will compute a sequence of observables according to a
-#' vector autoregressive model of order p.
+#' \code{create_varp_data} will compute a sequence of observables using a simple
+#' vector autoregressive process.
 #'
-#' @param B   A (K x Kp) matrix, providing the coeffcients for lag 1 - p.
-#' @param Z_0 A (K x p)  matrix, will be used as starting values.
-#' @param UU  A (K x T) matrix, providing the sequence of error vectors.
-#' @return A (K x T) matrix of observables. The first columns will be equal to
-#'   \code{Z_0}. The final observation of the K variables will be in column T.
+#' @param B   A `(K x Kp)` matrix. It provides the coeffcients for lag `1` to
+#'   `p` with the first row containing the coefficents of the first equation.
+#'   Parameter `p` is the maximum lag length and `K` the number of variables.
+#' @param Z_0 A `(K x p)` matrix. Will be used as starting values. The first
+#'   column corresponds to the very first time period.
+#' @param UU  A `(K x N)` matrix. It provides the sequence of error vectors.
+#' @return A `(K x (N + p))` matrix of observations. The first `p` columns will
+#'   be equal to `Z_0`. The final observation of the `K` variables will be in
+#'   column `N`.
 #' @section Note: For a faster implementation, see
 #'   \href{http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/}{this
 #'    solution} by Dirk Eddelbuettel.

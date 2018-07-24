@@ -7,20 +7,24 @@
 create_varp_data(B, Z_0, UU)
 }
 \arguments{
-\item{B}{A (K x Kp) matrix, providing the coeffcients for lag 1 - p.}
+\item{B}{A \code{(K x Kp)} matrix. It provides the coeffcients for lag \code{1} to
+\code{p} with the first row containing the coefficents of the first equation.
+Parameter \code{p} is the maximum lag length and \code{K} the number of variables.}
 
-\item{Z_0}{A (K x p)  matrix, will be used as starting values.}
+\item{Z_0}{A \code{(K x p)} matrix. Will be used as starting values. The first
+column corresponds to the very first time period.}
 
-\item{UU}{A (K x T) matrix, providing the sequence of error vectors.}
+\item{UU}{A \code{(K x N)} matrix. It provides the sequence of error vectors.}
 }
 \value{
-A (K x T) matrix of observables. The first columns will be equal to
-\code{Z_0}. The final observation of the K variables will be in column T.
+A \code{(K x (N + p))} matrix of observations. The first \code{p} columns will
+be equal to \code{Z_0}. The final observation of the \code{K} variables will be in
+column \code{N}.
 }
 \description{
 Given some starting values, coefficients and a sequence of error vectors,
-\code{create_varp_data} will compute a sequence of observables according to a
-vector autoregressive model of order p.
+\code{create_varp_data} will compute a sequence of observables using a simple
+vector autoregressive process.
 }
 \section{Note}{
  For a faster implementation, see

@@ -10,13 +10,16 @@ create_arp_data(a, y0, e = rnorm(N), N = 100, intercept = FALSE)
 \item{a}{A numeric vector. It specifies the lag coefficients and its length
 will determine the maximum lag order \eqn{p}.}
 
-\item{y0}{A numeric vector. It provides pre-sample observations and its length
-must be at minimum \eqn{p} (see above).}
+\item{y0}{A numeric vector. It provides pre-sample observations and its
+length must be at minimum \eqn{p} (see above).}
 
-\item{e}{A numeric vector. It contains the innovations that hit the system. If
-unspecified, it will draw from a standard normal distribution.}
+\item{e}{A numeric vector. It contains the innovations that hit the system.
+If unspecified, it will draw from a standard normal distribution.}
 
 \item{N}{An integer scalar. The sample size. Defaults to \code{N = 100}.}
+
+\item{intercept}{A logical scalar. If the first entry of \code{a} is the value of
+the intercept, set to \code{TRUE}. Otherwise leave at \code{FALSE}.}
 }
 \value{
 An numeric vector of length \code{N}.
