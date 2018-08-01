@@ -7,14 +7,14 @@
 create_arp_data(a, y0, e = rnorm(N), N = 100, intercept = FALSE)
 }
 \arguments{
-\item{a}{A numeric vector. It specifies the lag coefficients and its length
-will determine the maximum lag order \eqn{p}.}
+\item{a}{A numeric vector, specifying the lag coefficients. Its length
+will determine the maximum lag order \code{p}.}
 
-\item{y0}{A numeric vector. It provides pre-sample observations and its
-length must be at minimum \eqn{p} (see above).}
+\item{y0}{A numeric vector, providing pre-sample observations. Its
+length must be at minimum \code{p} (see above).}
 
-\item{e}{A numeric vector. It contains the innovations that hit the system.
-If unspecified, it will draw from a standard normal distribution.}
+\item{e}{A numeric vector, containing the innovations that hit the system.
+If unspecified, it will be drawn from a standard normal distribution.}
 
 \item{N}{An integer scalar. The sample size. Defaults to \code{N = 100}.}
 

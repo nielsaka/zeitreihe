@@ -5,12 +5,12 @@
 #'\code{create_arp_data} will compute a sequence of observables through a
 #'univariate autoregressive model.
 #'
-#'@param a    A numeric vector. It specifies the lag coefficients and its length
-#'  will determine the maximum lag order \eqn{p}.
-#'@param y0   A numeric vector. It provides pre-sample observations and its
-#'  length must be at minimum \eqn{p} (see above).
-#'@param e    A numeric vector. It contains the innovations that hit the system.
-#'  If unspecified, it will draw from a standard normal distribution.
+#'@param a    A numeric vector, specifying the lag coefficients. Its length
+#'  will determine the maximum lag order `p`.
+#'@param y0   A numeric vector, providing pre-sample observations. Its
+#'  length must be at minimum `p` (see above).
+#'@param e    A numeric vector, containing the innovations that hit the system.
+#'  If unspecified, it will be drawn from a standard normal distribution.
 #'@param N    An integer scalar. The sample size. Defaults to `N = 100`.
 #'@param intercept A logical scalar. If the first entry of `a` is the value of
 #'  the intercept, set to `TRUE`. Otherwise leave at `FALSE`.
@@ -56,18 +56,18 @@ create_var1_data <- function(A, Y_0, EE) {
 #' \code{create_varp_data} will compute a sequence of observables using a simple
 #' vector autoregressive process.
 #'
-#' @param B   A `(K x Kp)` matrix. It provides the coeffcients for lag `1` to
+#' @param B   A `(K x Kp)` matrix, providing the coeffcients for lag `1` to
 #'   `p` with the first row containing the coefficents of the first equation.
 #'   Parameter `p` is the maximum lag length and `K` the number of variables.
-#' @param Z_0 A `(K x p)` matrix. Will be used as starting values. The first
+#' @param Z_0 A `(K x p)` matrix which will be used as starting values. The first
 #'   column corresponds to the very first time period.
-#' @param UU  A `(K x N)` matrix. It provides the sequence of error vectors.
-#' @return A `(K x (N + p))` matrix of observations. The first `p` columns will
+#' @param UU  A `(K x N)` matrix, providing the sequence of error vectors.
+#' @return A `(K x (N + p))` matrix holding the observations. The first `p` columns will
 #'   be equal to `Z_0`. The final observation of the `K` variables will be in
 #'   column `N`.
 #' @section Note: For a faster implementation, see
-#'   \href{http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/}{this
-#'    solution} by Dirk Eddelbuettel.
+#' [this solution](http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/)
+#' by Dirk Eddelbuettel.
 #' @export
 create_varp_data <- function(B, Z_0, UU) {
   # no intercept
