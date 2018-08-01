@@ -1,7 +1,7 @@
 ----
 TODO
 ----
-1. nest VAR(1) in VAR(p) -> test comparison of both and delete VAR(1)
+
 2. add function for SVAR(p) data creation
 3. consider coherent naming scheme -> would involve renaming... :-/
 4. add tests for AR(p) and SVAR(p)
@@ -17,10 +17,15 @@ TODO
 7. covr() not running on windows machine -> try linux
 8.port code from mcs project -> forecasts + forecast evaluation of AR(p) processes
 9. extensive testing -> more robust and complete sanity checks
+10. clean up testing files
 
 ----
 DONE
 ----
+
+#### 2018-08-01
+
+* nest VAR(1) in VAR(p) -> test comparison of both and delete VAR(1)
 
 #### 2018-07-04
 

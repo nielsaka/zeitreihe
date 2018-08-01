@@ -23,42 +23,22 @@ create_arp_data <- function(a, y0, e = rnorm(N), N = 100, intercept = FALSE) {
   as.vector(create_varp_data(B, Y_0, EE))
 }
 ###############################################################################.
-#' Create data using a VAR(1)
-#'
-#' Given some starting values, coefficients and a sequence of error vectors,
-#' \code{create_var1_data} will compute a sequence of observables according to a
-#' vector autoregressive model of order one.
-#'
-#' @param A   A (K x K) matrix, providing the coeffcients for lag one.
-#' @param Y_0 A (K x 1) vector or column matrix, will be used as starting
-#'   values.
-#' @param EE  A (K x T) matrix, providing the sequence of error vectors.
-#' @return A (K x T) matrix of observables. The first column will equal \code{A
-#'   \%*\% Y_0 + EE[, 1]}. The final observation of the K variables will be in
-#'   column T.
-#' @section Note: For a faster implementation, see
-#'   \href{http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/}{this
-#'    solution} by Dirk Eddelbuettel.
-#' @export
-create_var1_data <- function(A, Y_0, EE) {
-  create_varp_data(A, Y_0, EE)
-}
-###############################################################################.
 #' Create data using a VAR(p)
 #'
 #' Given some starting values, coefficients and a sequence of error vectors,
 #' \code{create_varp_data} will compute a sequence of observables using a simple
 #' vector autoregressive process.
 #'
-#' @param B   A `(K x Kp)` matrix, providing the coeffcients for lag `1` to
-#'   `p` with the first row containing the coefficents of the first equation.
+#' @param B   A `(K x Kp)` matrix, providing the coeffcients for lag `1` to `p`
+#'   with the first row containing the coefficents of the first equation.
 #'   Parameter `p` is the maximum lag length and `K` the number of variables.
-#' @param Z_0 A `(K x p)` matrix which will be used as starting values. The first
-#'   column corresponds to the very first time period.
+#' @param Z_0 A `(K x p)` matrix which will be used as starting values. The
+#'   first column corresponds to the very first time period.
 #' @param UU  A `(K x N)` matrix, providing the sequence of error vectors.
-#' @return A `(K x (N + p))` matrix holding the observations. The first `p` columns will
-#'   be equal to `Z_0`. The final observation of the `K` variables will be in
-#'   column `N`.
+#' @return A `(K x (N + p))` matrix holding the observations. The first `p`
+#'   columns will be equal to `Z_0`. Column `p+1` will equal to
+#'   `B' \%*\% Z_0 + EE[, 1]`.The final observation of the `K` variables
+#'    will be in column `N`.
 #' @section Note: For a faster implementation, see
 #' [this solution](http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/)
 #' by Dirk Eddelbuettel.

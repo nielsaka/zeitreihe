@@ -23,7 +23,7 @@ test_that("VAR(1) works", {
   Y_0 <- c(10, 15)
 
   expect_equivalent(
-    create_var1_data(A, Y_0, EE),
+    create_varp_data(A, Y_0, EE),
     cbind(Y_0, matrix(c(20, 11.5), ncol = 1))
     )
 
@@ -39,7 +39,7 @@ test_that("VAR(1) works", {
   Y_0 <- rep(50, K)
 
   expect_identical(
-    create_var1_data(A, Y_0, EE)[, n], # takes nearly 1000 obs !
+    create_varp_data(A, Y_0, EE)[, n], # takes nearly 1000 obs !
     c(y1 = 0, y2 = 0, y3 = 0, y4 = 0, y5 = 0)
   )
   #############################################################################.
@@ -47,7 +47,7 @@ test_that("VAR(1) works", {
   EE <- EE[, 1:10]
 
   expect_identical(
-  tt <- create_var1_data(A, Y_0, EE),
+  tt <- create_varp_data(A, Y_0, EE),
   # create_varp_data includes starting values in return
   pp <- create_varp_data(B = A, Z_0 = Y_0, UU = EE)
   )
@@ -64,7 +64,7 @@ test_that("Var(p) works", {
   Y_0 <- matrix(0, K, 1)
   Z_0 <- matrix(0, K, 2)
 
-  out_var1 <- create_var1_data(B1, Y_0, UU)
+  out_var1 <- create_varp_data(B1, Y_0, UU)
   out_varp <- create_varp_data(B, Z_0, UU)[, -1]
   expect_equal(sum(out_varp - out_var1), 0)
 
