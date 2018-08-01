@@ -41,13 +41,7 @@ create_arp_data <- function(a, y0, e = rnorm(N), N = 100, intercept = FALSE) {
 #'    solution} by Dirk Eddelbuettel.
 #' @export
 create_var1_data <- function(A, Y_0, EE) {
-  YY <- matrix(, ncol = ncol(EE) + 1, nrow = nrow(EE))
-  rownames(YY) <- paste0("y", seq_len(nrow(EE)))
-  YY[, 1] <- Y_0
-  for (t in seq_len(ncol(EE))) {
-      YY[, t + 1] = A %*% YY[, t] + EE[, t]
-    }
-  return(YY)
+  create_varp_data(A, Y_0, EE)
 }
 ###############################################################################.
 #' Create data using a VAR(p)
