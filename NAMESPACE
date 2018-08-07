@@ -2,7 +2,8 @@
 
 export(MA_coeffs)
 export(chol_decomp)
-export(create_var1_data)
+export(create_arp_data)
+export(create_svar_data)
 export(create_varp_data)
 export(ols_mv)
 export(sMA_CI)

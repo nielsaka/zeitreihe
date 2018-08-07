@@ -1,22 +1,36 @@
-
-
-create_svar_data <- function(C, B, Y0, EE) {
-
-  # A or B model ??
-  # long-run or short run restrictions ??
-  # Other properties ?? nonconstant ... so many things
-
-  # --> keep it simple: short-run restrictions is what I need at the moment
-
-  # provide structural coefficients: A_0, C, B (check notation in KilianLütkepohl..)
-
+###############################################################################.
+#'
+#' Given some starting values, coefficients, a sequence of error vectors,
+#' \code{create_varp_data} will compute a sequence of observables using a simple
+#' vector autoregressive process.
+#'
+#' @param B A `(K x K)` matrix, providing the contemporaneous impact of the structural
+#' errors on the observed variables.
+#' @param W A `(K x N)` matrix, providing the sequence of structural error vectors.
+#'
+#' @inherit create_varp_data
+#'
+#'@section Details:
+#'
+#' * short-run restriction implemented
+#'
+#' @export
+create_svar_data <- function(A, B, Y0, W) {
+  # B - contemporaneous impact of structural innovations
+  # A - reduced-form lag coefficients
+  # C - structural lag coefficients
+  # U - reduced-form innovations
+  # W - structural innovations
 
   # turn into reduced form
-  A <- solve(A_0) %*% A_1
-  EE <- solve(A_0) %*% E
+  U <- B %*% W
 
   # normalise errors?
-  # EE <- EE / sqrt(diag(A_0 %*% t(A_0)))
+  # U <- U / sqrt(diag(B %*% t(B)))
 
-  create_varp_data(A, Y_0, EE)[, (1:n) + nburnin]
+  # TODO: documentation
+  # TODO: tests
+
+  create_varp_data(A, Y0, U)
 }
+###############################################################################.

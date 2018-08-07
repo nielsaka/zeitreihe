@@ -7,10 +7,10 @@ Description:
   useful when analysing multivariate and univariate time series. It does not aim
   at completeness. Instead, the package is a byproduct of my work. Its contents 
   is driven by whatever I felt necessary to implement myself.
-Depends: R (>= 3.3.0)
+Depends: R (>= 3.0.0)
 Suggests: testthat
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Roxygen: list(markdown = TRUE)
