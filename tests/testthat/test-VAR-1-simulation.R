@@ -49,7 +49,7 @@ test_that("VAR(1) works", {
   expect_identical(
   tt <- create_varp_data(A, Y_0, EE),
   # create_varp_data includes starting values in return
-  pp <- create_varp_data(B = A, Z_0 = Y_0, UU = EE)
+  pp <- create_varp_data(A = A, Y0 = Y_0, U = EE)
   )
 
 })
@@ -117,7 +117,7 @@ test_that("Var(p) works", {
   # }
 
   expect_error_dim <- function(...){
-    expect_error(..., regexp = "dim(Z_0)[1] == K", fixed = TRUE)
+    expect_error(..., regexp = "dim(Y0)[1] == K", fixed = TRUE)
   }
 
   # Z_0 should have K rows and p columns

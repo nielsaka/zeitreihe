@@ -4,22 +4,23 @@
 \alias{create_varp_data}
 \title{Create data using a VAR(p)}
 \usage{
-create_varp_data(B, Z_0, UU)
+create_varp_data(A, Y0, U)
 }
 \arguments{
-\item{B}{A \code{(K x Kp)} matrix, providing the coeffcients for lag \code{1} to
-\code{p} with the first row containing the coefficents of the first equation.
+\item{A}{A \code{(K x Kp)} matrix, providing the coeffcients for lag \code{1} to \code{p}
+with the first row containing the coefficents of the first equation.
 Parameter \code{p} is the maximum lag length and \code{K} the number of variables.}
 
-\item{Z_0}{A \code{(K x p)} matrix which will be used as starting values. The first
-column corresponds to the very first time period.}
+\item{Y0}{A \code{(K x p)} matrix which will be used as starting values. The
+first column corresponds to the very first time period.}
 
-\item{UU}{A \code{(K x N)} matrix, providing the sequence of error vectors.}
+\item{U}{A \code{(K x N)} matrix, providing the sequence of error vectors.}
 }
 \value{
-A \code{(K x (N + p))} matrix holding the observations. The first \code{p} columns will
-be equal to \code{Z_0}. The final observation of the \code{K} variables will be in
-column \code{N}.
+A \code{(K x (N + p))} matrix holding the observations. The first \code{p}
+columns will be equal to \code{Y0}. Column \code{p+1} will equal to
+\code{A \%*\% Y0 + U[, 1]}.The final observation of the \code{K} variables
+will be in column \code{N}.
 }
 \description{
 Given some starting values, coefficients and a sequence of error vectors,
@@ -28,7 +29,7 @@ vector autoregressive process.
 }
 \section{Note}{
  For a faster implementation, see
-\href{http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/}{thissolution}
+\href{http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/}{this solution}
 by Dirk Eddelbuettel.
 }
 
