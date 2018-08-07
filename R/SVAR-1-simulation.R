@@ -1,18 +1,20 @@
 ###############################################################################.
+#' Create data according to a structural VAR
 #'
-#' Given some starting values, coefficients, a sequence of error vectors,
+#' Given some starting values, coefficients, a sequence of *structural* error
+#' vectors, and a matrix of contemporaneous impact effects of those errors
 #' \code{create_varp_data} will compute a sequence of observables using a simple
 #' vector autoregressive process.
 #'
-#' @param B A `(K x K)` matrix, providing the contemporaneous impact of the structural
-#' errors on the observed variables.
-#' @param W A `(K x N)` matrix, providing the sequence of structural error vectors.
+#' @param B A `(K x K)` matrix, providing the contemporaneous impact of the
+#'   structural errors on the observed variables.
+#' @param W A `(K x N)` matrix, providing the sequence of structural error
+#'   vectors.
 #'
 #' @inherit create_varp_data
+#' @family functions for creating data
 #'
-#'@section Details:
-#'
-#' * short-run restriction implemented
+#' @section Details: * short-run restriction implemented
 #'
 #' @export
 create_svar_data <- function(A, B, Y0, W) {
@@ -28,7 +30,6 @@ create_svar_data <- function(A, B, Y0, W) {
   # normalise errors?
   # U <- U / sqrt(diag(B %*% t(B)))
 
-  # TODO: documentation
   # TODO: tests
 
   create_varp_data(A, Y0, U)

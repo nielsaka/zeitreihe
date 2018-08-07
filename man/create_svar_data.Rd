@@ -2,9 +2,7 @@
 % Please edit documentation in R/SVAR-1-simulation.R
 \name{create_svar_data}
 \alias{create_svar_data}
-\title{Given some starting values, coefficients, a sequence of error vectors,
-\code{create_varp_data} will compute a sequence of observables using a simple
-vector autoregressive process.}
+\title{Create data according to a structural VAR}
 \usage{
 create_svar_data(A, B, Y0, W)
 }
@@ -13,30 +11,28 @@ create_svar_data(A, B, Y0, W)
 with the first row containing the coefficents of the first equation.
 Parameter \code{p} is the maximum lag length and \code{K} the number of variables.}
 
-\item{B}{A \code{(K x K)} matrix, providing the contemporaneous impact of the structural
-errors on the observed variables.}
+\item{B}{A \code{(K x K)} matrix, providing the contemporaneous impact of the
+structural errors on the observed variables.}
 
 \item{Y0}{A \code{(K x p)} matrix which will be used as starting values. The
 first column corresponds to the very first time period.}
 
-\item{W}{A \code{(K x N)} matrix, providing the sequence of structural error vectors.}
+\item{W}{A \code{(K x N)} matrix, providing the sequence of structural error
+vectors.}
 }
 \value{
 A \code{(K x (N + p))} matrix holding the observations. The first \code{p}
-columns will be equal to \code{Y0}. Column \code{p+1} will equal to
-\code{A \%*\% Y0 + U[, 1]}.The final observation of the \code{K} variables
-will be in column \code{N}.
+columns will be equal to \code{Y0}. Column \code{p + 1} will be equal to \code{A \%*\% Y0 + U[, 1]}, where \code{U} contains reduced form errors.The final observation of
+the \code{K} variables will be in column \code{N}.
 }
 \description{
-Given some starting values, coefficients and a sequence of error vectors,
+Given some starting values, coefficients, a sequence of \emph{structural} error
+vectors, and a matrix of contemporaneous impact effects of those errors
 \code{create_varp_data} will compute a sequence of observables using a simple
 vector autoregressive process.
 }
 \section{Details}{
-
-\itemize{
-\item short-run restriction implemented
-}
+ * short-run restriction implemented
 }
 
 \section{Note}{
@@ -45,3 +41,7 @@ vector autoregressive process.
 by Dirk Eddelbuettel.
 }
 
+\seealso{
+Other functions for creating data: \code{\link{create_varp_data}}
+}
+\concept{functions for creating data}

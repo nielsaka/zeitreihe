@@ -2,11 +2,12 @@
 TODO
 ----
 
-2. add function for SVAR(p) data creation
-3. consider coherent naming scheme -> would involve renaming... :-/
-4. add tests for AR(p) and SVAR(p)
+4. add tests for SVAR(p)
+5. create VAR estimation
+
 5. write custom code for LR test; test; compare to vars package
 6. port code from legacy package on graphical criteria -> function to implement test
+7. add examples to VAR and SVAR
 
 4. documentation missing: description of function and paramters
 5. example cannot run successfully; problem with network drive?
@@ -23,9 +24,16 @@ TODO
 DONE
 ----
 
+#### 2018-08-07
+
+* add function for SVAR(p) data creation
+* implement coherent naming scheme
+
 #### 2018-08-01
 
 * nest VAR(1) in VAR(p) -> test comparison of both and delete VAR(1)
+
+* add tests for AR(p), VAR(1), VAR(p)
 
 #### 2018-07-04
 
