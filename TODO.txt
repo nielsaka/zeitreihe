@@ -1,11 +1,13 @@
 ----
 TODO
 ----
-4. document and test VAR estimation
+4. document VAR estimation
 
 5. write custom code for LR test; test; compare to vars package
 6. port code from legacy package on graphical criteria -> function to implement test
 7. add examples to VAR and SVAR
+
+8. Cannot disable constant in ols_mv -> add argument
 
 4. documentation missing: description of function and paramters
 5. example cannot run successfully; problem with network drive?
@@ -24,6 +26,7 @@ DONE
 
 #### 2018-08-08
 
+* create tests for VAR estimation
 * create VAR estimation
 * add tests for SVAR(p)
 
