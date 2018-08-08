@@ -2,7 +2,7 @@
 % Please edit documentation in R/SVAR-1-simulation.R
 \name{create_svar_data}
 \alias{create_svar_data}
-\title{Create data according to a structural VAR}
+\title{Create data using a structural VAR}
 \usage{
 create_svar_data(A, B, Y0, W)
 }
@@ -22,17 +22,22 @@ vectors.}
 }
 \value{
 A \code{(K x (N + p))} matrix holding the observations. The first \code{p}
-columns will be equal to \code{Y0}. Column \code{p + 1} will be equal to \code{A \%*\% Y0 + U[, 1]}, where \code{U} contains reduced form errors.The final observation of
+columns will be equal to \code{Y0}. Column \code{p + 1} will be equal to \code{A \%*\% Y0 + U[, 1]}, where \code{U} contains reduced form errors. The final observation of
 the \code{K} variables will be in column \code{N}.
 }
 \description{
 Given some starting values, coefficients, a sequence of \emph{structural} error
-vectors, and a matrix of contemporaneous impact effects of those errors
+vectors, and a matrix of contemporaneous impact effects of those errors,
 \code{create_varp_data} will compute a sequence of observables using a simple
 vector autoregressive process.
 }
 \section{Details}{
- * short-run restriction implemented
+
+\itemize{
+\item short-run restriction implemented
+\item could just pass structural errors to creat_varp_data; however, here, it's
+documented.
+}
 }
 
 \section{Note}{

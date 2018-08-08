@@ -2,7 +2,7 @@
 % Please edit documentation in R/VAR-1-simulation.R
 \name{create_varp_data}
 \alias{create_varp_data}
-\title{Create data using a VAR(p)}
+\title{Create data using a reduced-form VAR}
 \usage{
 create_varp_data(A, Y0, U)
 }
@@ -18,7 +18,7 @@ first column corresponds to the very first time period.}
 }
 \value{
 A \code{(K x (N + p))} matrix holding the observations. The first \code{p}
-columns will be equal to \code{Y0}. Column \code{p + 1} will be equal to \code{A \%*\% Y0 + U[, 1]}, where \code{U} contains reduced form errors.The final observation of
+columns will be equal to \code{Y0}. Column \code{p + 1} will be equal to \code{A \%*\% Y0 + U[, 1]}, where \code{U} contains reduced form errors. The final observation of
 the \code{K} variables will be in column \code{N}.
 }
 \description{

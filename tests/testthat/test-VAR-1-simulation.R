@@ -1,7 +1,7 @@
-context("Testing data creation")
+context("Testing VAR data creation")
 
 
-test_that("AR(p) works", {
+test_that("Simulating AR(p) works", {
   #############################################################################.
   # basic test
   set.seed(8191)
@@ -15,7 +15,7 @@ test_that("AR(p) works", {
   expect_equal(tail(create_arp_data(a, y_0, ee), 100), rep(0, 100))
 })
 
-test_that("VAR(1) works", {
+test_that("Simulating VAR(1) works", {
   #############################################################################.
   # basic test
   A <- matrix(c(1/2, 1/4, 2/3, 1/3), ncol = 2)
@@ -53,7 +53,7 @@ test_that("VAR(1) works", {
   )
 
 })
-test_that("Var(p) works", {
+test_that("Simulating Var(p) works", {
   set.seed(15)
   K <- 3
   Tt <- 50

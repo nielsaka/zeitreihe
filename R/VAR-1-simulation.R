@@ -24,7 +24,7 @@ create_arp_data <- function(a, y0, e = rnorm(N), N = 100, intercept = FALSE) {
   as.vector(create_varp_data(A, Y_0, EE))
 }
 ###############################################################################.
-#' Create data using a VAR(p)
+#' Create data using a reduced-form VAR
 #'
 #' Given some starting values, coefficients and a sequence of error vectors,
 #' \code{create_varp_data} will compute a sequence of observables using a simple
