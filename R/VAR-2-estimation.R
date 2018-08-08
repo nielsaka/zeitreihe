@@ -111,18 +111,41 @@ sMA_coeffs <- function(PHI, B) {
   THETA
 }
 ###############################################################################.
-#' Multivariate ordinary least squares
+#' Multivariate ordinary least squares for VARs
 #'
-#' Multivariate ordinary least squares (<=> equation-wise ols)
+#' Perform multivariate OLS on a set of observables. Creation of lags for the
+#' VAR will be handled by the function.
 #'
-#' @param data A matrix, ..
-#' @param p An integer, the largest lag.
+#' This routine applies equation-wise OLS to a VAR. It is equivalent to running
+#' OLS with `p` lags for each of the variables and collecting the coefficients
+#' and residuals in a matrix.
 #'
-#' @return A list with four components \code{BETA.hat}, \code{SIGMA.hat},
-#'   \code{U.hat}, and \code{std.err}. The first three are vectors, the last
-#'   component is a scalar.
+#' @param data A `(N x K)` matrix carrying the data for estimation. There are
+#' `N` observations for each of the `K` variables.
+#' @param p A scalar integer, the lag length used for estimation.
 #'
-#'   \code{BETA.hat} contains the coefficient estimates, ...
+#' @return A list with four elements:
+#'
+#'   + `BETA.hat` is a `(K x [K * p + 1])` or `(K x [K * p])` named matrix
+#'   containing the coefficient estimates. Its dimension depends on wether a
+#'   constant is included. Each column contains the coefficents for a particular
+#'   regressor, each row corresponds to a single equation. If `data` did not
+#'   carry names, the variables will be named *y1* and counting. The names of
+#'   the lagged regressors are derived by appending the variable name with a
+#'   *.l1* for lag one etc.
+#'   If a constant is included, its coefficients are in the first column.
+#'   + `SIGMA.hat` is a `(K x K)` named matrix. It is the covariance matrix of the
+#'   residuals. The columns and rows are named after the variables in `data`.
+#'   + `U.hat` is a `(K x N)` matrix of residuals. Its rows are named after the
+#'   variables, too.
+#'   + `std.err` is a matrix of the same dimension and naming scheme as
+#'    `BETA.hat`. It has the standard errors of the coefficient estimates.
+#'
+#'
+#' @section TODO:
+#' * rename data to Y (consistency)
+#' * switch dimension of data
+#' * add switch for intercept
 #' @export
 ols_mv <- function(data, p) {
   K <- ncol(data)
