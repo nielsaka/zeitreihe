@@ -1,9 +1,7 @@
 ----
 TODO
 ----
-4. document VAR estimation: see help file of ols_mv
-5. test correctness of SIGMA.hat and std.err
-
+4. write, document and test SVAR estimation routine
 5. write custom code for LR test; test; compare to vars package
 6. port code from legacy package on graphical criteria -> function to implement test
 7. add examples to VAR and SVAR
@@ -24,6 +22,13 @@ TODO
 ----
 DONE
 ----
+
+#### 2018-08-10
+
+* add tests for constant, residual covariance matrix, and dimension names of
+  output of ols_mv
+* add switch for constant in ols_mv
+* rename argument and swap dimensions of argument of ols_mv
 
 #### 2018-08-08
 

@@ -20,6 +20,23 @@ test_that("Simple multivariate OLS succeeds", {
   Y <- do.call("create_varp_data", prep_input_varp(K, N, p))
   expect_equal(ncol(ols_mv(Y, p, const = FALSE)$BETA.hat), K * p)
 
+  # input has no dimnames
+
+  rownames(Y) <- NULL
+
+  expect_identical(
+    colnames(ols_mv(Y, p)$BETA.hat),
+    c("const", "y1.l1", "y2.l1", "y3.l1", "y1.l2", "y2.l2", "y3.l2")
+  )
+  expect_identical(
+    colnames(ols_mv(Y, p, const = FALSE)$BETA.hat),
+    c("y1.l1", "y2.l1", "y3.l1", "y1.l2", "y2.l2", "y3.l2")
+  )
+  expect_identical(
+    colnames(ols_mv(Y, p, const = FALSE)$SIGMA.hat),
+    c("y1", "y2", "y3")
+  )
+
   skip_if(save_time)
 
   # test SIGMA.hat

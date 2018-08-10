@@ -144,22 +144,14 @@ sMA_coeffs <- function(PHI, B) {
 #'    `BETA.hat`. It has the standard errors of the coefficient estimates.
 #'
 #'
-#' @section TODO:
-#' * rownames if Y unnamed? -> no names!
 #' @export
 ols_mv <- function(Y, p, const = TRUE) {
   K <- nrow(Y)
   Kp <- K * p
   N <- ncol(Y)
-  row.names <- character(0)
-  if (const) row.names <- c(row.names, "const")
-  if (!is.null(rownames(Y))) {
-    for (i in seq_len(p)) {
-      row.names <- c(row.names, paste0(rownames(Y), ".l", i))
-    }
-  } else {
-    row.names <- NULL
-  }
+  znames <- if (const) "const" else character(0)
+  ynames <- if (!is.null(rownames(Y))) rownames(Y) else paste0("y", seq_len(K))
+  znames <- c(znames, paste0(ynames, rep(paste0(".l", seq_len(p)), each = K)))
   cc <- if (const) 1 else numeric(0)
   if (p > 0) {
     Z <- rbind(cc, t(embed(t(Y), p))[, 1:(N - p)])
@@ -167,7 +159,8 @@ ols_mv <- function(Y, p, const = TRUE) {
     Z <- rep(cc, N - p)
   }
   Y <- Y[, -seq_len(p)]
-  rownames(Z) <- row.names
+  rownames(Z) <- znames
+  rownames(Y) <- ynames
   ZZ.inv <- invSPD(Z %*% t(Z))
   BETA.hat  <- Y %*% t(Z) %*% ZZ.inv
   U.hat <- Y - BETA.hat %*% Z
