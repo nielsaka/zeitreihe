@@ -37,7 +37,7 @@ create_arp_data <- function(a, y0, e = rnorm(N), N = 100, intercept = FALSE) {
 #'   first column corresponds to the very first time period.
 #' @param U  A `(K x N)` matrix, providing the sequence of error vectors.
 #' @return A `(K x (N + p))` matrix holding the observations. The first `p`
-#'   columns will be equal to `Y0`. Column `p + 1` will be equal to `A \\%*\\%
+#'   columns will be equal to `Y0`. Column `p + 1` will be equal to `A \\\%*\\\%
 #'   Y0 + U[, 1]`, where `U` contains reduced form errors. The final observation
 #'   of the `K` variables will be in column `N`.
 #' @family functions for creating data

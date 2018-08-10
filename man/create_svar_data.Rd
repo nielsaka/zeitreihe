@@ -22,7 +22,7 @@ vectors.}
 }
 \value{
 A \code{(K x (N + p))} matrix holding the observations. The first \code{p}
-columns will be equal to \code{Y0}. Column \code{p + 1} will be equal to \code{A \\\%*\\\% Y0 + U[, 1]}, where \code{U} contains reduced form errors. The final observation
+columns will be equal to \code{Y0}. Column \code{p + 1} will be equal to \code{A \\\\\%*\\\\\% Y0 + U[, 1]}, where \code{U} contains reduced form errors. The final observation
 of the \code{K} variables will be in column \code{N}.
 }
 \description{
@@ -49,3 +49,4 @@ by Dirk Eddelbuettel.
 \seealso{
 Other functions for creating data: \code{\link{create_varp_data}}
 }
+\concept{functions for creating data}
