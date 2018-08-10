@@ -120,7 +120,7 @@ sMA_coeffs <- function(PHI, B) {
 #' OLS with `p` lags for each of the variables and collecting the coefficients
 #' and residuals in a matrix.
 #'
-#' @param data A `(N x K)` matrix carrying the data for estimation. There are
+#' @param Y A `(N x K)` matrix carrying the data for estimation. There are
 #' `N` observations for each of the `K` variables.
 #' @param p A scalar integer, the lag length used for estimation.
 #'
@@ -129,13 +129,13 @@ sMA_coeffs <- function(PHI, B) {
 #'   + `BETA.hat` is a `(K x [K * p + 1])` or `(K x [K * p])` named matrix
 #'   containing the coefficient estimates. Its dimension depends on wether a
 #'   constant is included. Each column contains the coefficents for a particular
-#'   regressor, each row corresponds to a single equation. If `data` did not
+#'   regressor, each row corresponds to a single equation. If `Y` did not
 #'   carry names, the variables will be named *y1* and counting. The names of
 #'   the lagged regressors are derived by appending the variable name with a
 #'   *.l1* for lag one etc.
 #'   If a constant is included, its coefficients are in the first column.
 #'   + `SIGMA.hat` is a `(K x K)` named matrix. It is the covariance matrix of the
-#'   residuals. The columns and rows are named after the variables in `data`.
+#'   residuals. The columns and rows are named after the variables in `Y`.
 #'   + `U.hat` is a `(K x N)` matrix of residuals. Its rows are named after the
 #'   variables, too.
 #'   + `std.err` is a matrix of the same dimension and naming scheme as
@@ -143,15 +143,14 @@ sMA_coeffs <- function(PHI, B) {
 #'
 #'
 #' @section TODO:
-#' * rename data to Y (consistency)
 #' * switch dimension of data
 #' * add switch for intercept
 #' @export
-ols_mv <- function(data, p) {
-  K <- ncol(data)
+ols_mv <- function(Y, p) {
+  K <- ncol(Y)
   Kp <- K * p
-  N <- nrow(data)
-  Y.all <- t(data)
+  N <- nrow(Y)
+  Y.all <- t(Y)
   Y     <- Y.all[, -seq_len(p)]
   row.names <- c("const")
   if (!is.null(rownames(Y))) {

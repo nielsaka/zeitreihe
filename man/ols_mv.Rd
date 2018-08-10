@@ -4,10 +4,10 @@
 \alias{ols_mv}
 \title{Multivariate ordinary least squares for VARs}
 \usage{
-ols_mv(data, p)
+ols_mv(Y, p)
 }
 \arguments{
-\item{data}{A \code{(N x K)} matrix carrying the data for estimation. There are
+\item{Y}{A \code{(N x K)} matrix carrying the data for estimation. There are
 \code{N} observations for each of the \code{K} variables.}
 
 \item{p}{A scalar integer, the lag length used for estimation.}
@@ -18,13 +18,13 @@ A list with four elements:
 \item \code{BETA.hat} is a \code{(K x [K * p + 1])} or \code{(K x [K * p])} named matrix
 containing the coefficient estimates. Its dimension depends on wether a
 constant is included. Each column contains the coefficents for a particular
-regressor, each row corresponds to a single equation. If \code{data} did not
+regressor, each row corresponds to a single equation. If \code{Y} did not
 carry names, the variables will be named \emph{y1} and counting. The names of
 the lagged regressors are derived by appending the variable name with a
 \emph{.l1} for lag one etc.
 If a constant is included, its coefficients are in the first column.
 \item \code{SIGMA.hat} is a \code{(K x K)} named matrix. It is the covariance matrix of the
-residuals. The columns and rows are named after the variables in \code{data}.
+residuals. The columns and rows are named after the variables in \code{Y}.
 \item \code{U.hat} is a \code{(K x N)} matrix of residuals. Its rows are named after the
 variables, too.
 \item \code{std.err} is a matrix of the same dimension and naming scheme as
@@ -43,7 +43,6 @@ and residuals in a matrix.
 \section{TODO}{
 
 \itemize{
-\item rename data to Y (consistency)
 \item switch dimension of data
 \item add switch for intercept
 }

@@ -6,7 +6,7 @@ test_that("Simple multivariate OLS succeeds", {
   p <- 2
 
   Y <- do.call("create_varp_data", prep_input_varp(K, N, p))
-  expect_equal_to_reference(ols_mv(data = t(Y), p), "ols_mv.rds")
+  expect_equal_to_reference(ols_mv(Y = t(Y), p), "ols_mv.rds")
 
   skip_if(save_time)
 
@@ -15,7 +15,7 @@ test_that("Simple multivariate OLS succeeds", {
   p <- 3
 
   Y <- do.call("create_varp_data", prep_input_varp(K, N, p))
-  out <- ols_mv(data = t(Y), p)
+  out <- ols_mv(Y = t(Y), p)
   expect_equivalent(out$BETA.hat[, -1], make_A(K, p), tol = 3E-3)
 })
 
