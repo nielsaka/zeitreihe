@@ -123,6 +123,8 @@ sMA_coeffs <- function(PHI, B) {
 #' @param Y A `(K x N)` matrix carrying the data for estimation. There are
 #' `N` observations for each of the `K` variables.
 #' @param p A scalar integer, the lag length used for estimation.
+#' @param const A scalar boolean, indicating wether a constant should be
+#'   included. Defaults to TRUE.
 #'
 #' @return A list with four elements:
 #'
@@ -143,13 +145,14 @@ sMA_coeffs <- function(PHI, B) {
 #'
 #'
 #' @section TODO:
-#' * add switch for intercept
+#' * rownames if Y unnamed? -> no names!
 #' @export
-ols_mv <- function(Y, p) {
+ols_mv <- function(Y, p, const = TRUE) {
   K <- nrow(Y)
   Kp <- K * p
   N <- ncol(Y)
-  row.names <- c("const")
+  row.names <- character(0)
+  if (const) row.names <- c(row.names, "const")
   if (!is.null(rownames(Y))) {
     for (i in seq_len(p)) {
       row.names <- c(row.names, paste0(rownames(Y), ".l", i))
@@ -157,22 +160,22 @@ ols_mv <- function(Y, p) {
   } else {
     row.names <- NULL
   }
+  cc <- if (const) 1 else numeric(0)
   if (p > 0) {
-    Z <- rbind(1, t(embed(t(Y), p))[, 1:(N - p)])
+    Z <- rbind(cc, t(embed(t(Y), p))[, 1:(N - p)])
   } else {
-    Z <- rep(1, N - p)
+    Z <- rep(cc, N - p)
   }
   Y <- Y[, -seq_len(p)]
-  # TODO: RECORD SAMPLE LENGTH NOW, NOT EARLIER!
   rownames(Z) <- row.names
   ZZ.inv <- invSPD(Z %*% t(Z))
   BETA.hat  <- Y %*% t(Z) %*% ZZ.inv
   U.hat <- Y - BETA.hat %*% Z
-  SIGMA.hat <- U.hat %*% t(U.hat) / (N - p - Kp - 1)
+  SIGMA.hat <- U.hat %*% t(U.hat) / (N - p - Kp - const)
   sigma.beta.hat <- ZZ.inv %x% SIGMA.hat
-  sb.hat <- matrix(, K, Kp + 1)
+  sb.hat <- matrix(, K, Kp + const)
   for (i in seq_len(K)) {
-    sb.hat[i, ] <- sqrt(diag(sigma.beta.hat))[seq(i, (Kp + 1) * K, K)]
+    sb.hat[i, ] <- sqrt(diag(sigma.beta.hat))[seq(i, (Kp + const) * K, K)]
   }
   dimnames(sb.hat) <- dimnames(BETA.hat)
 

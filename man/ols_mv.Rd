@@ -4,13 +4,16 @@
 \alias{ols_mv}
 \title{Multivariate ordinary least squares for VARs}
 \usage{
-ols_mv(Y, p)
+ols_mv(Y, p, const = TRUE)
 }
 \arguments{
 \item{Y}{A \code{(K x N)} matrix carrying the data for estimation. There are
 \code{N} observations for each of the \code{K} variables.}
 
 \item{p}{A scalar integer, the lag length used for estimation.}
+
+\item{const}{A scalar boolean, indicating wether a constant should be
+included. Defaults to TRUE.}
 }
 \value{
 A list with four elements:
@@ -43,7 +46,7 @@ and residuals in a matrix.
 \section{TODO}{
 
 \itemize{
-\item add switch for intercept
+\item rownames if Y unnamed? -> no names!
 }
 }
 
