@@ -120,7 +120,7 @@ sMA_coeffs <- function(PHI, B) {
 #' OLS with `p` lags for each of the variables and collecting the coefficients
 #' and residuals in a matrix.
 #'
-#' @param Y A `(N x K)` matrix carrying the data for estimation. There are
+#' @param Y A `(K x N)` matrix carrying the data for estimation. There are
 #' `N` observations for each of the `K` variables.
 #' @param p A scalar integer, the lag length used for estimation.
 #'
@@ -143,15 +143,12 @@ sMA_coeffs <- function(PHI, B) {
 #'
 #'
 #' @section TODO:
-#' * switch dimension of data
 #' * add switch for intercept
 #' @export
 ols_mv <- function(Y, p) {
-  K <- ncol(Y)
+  K <- nrow(Y)
   Kp <- K * p
-  N <- nrow(Y)
-  Y.all <- t(Y)
-  Y     <- Y.all[, -seq_len(p)]
+  N <- ncol(Y)
   row.names <- c("const")
   if (!is.null(rownames(Y))) {
     for (i in seq_len(p)) {
@@ -161,10 +158,12 @@ ols_mv <- function(Y, p) {
     row.names <- NULL
   }
   if (p > 0) {
-    Z <- rbind(1, t(embed(t(Y.all), p))[, 1:(N - p)])
+    Z <- rbind(1, t(embed(t(Y), p))[, 1:(N - p)])
   } else {
     Z <- rep(1, N - p)
   }
+  Y <- Y[, -seq_len(p)]
+  # TODO: RECORD SAMPLE LENGTH NOW, NOT EARLIER!
   rownames(Z) <- row.names
   ZZ.inv <- invSPD(Z %*% t(Z))
   BETA.hat  <- Y %*% t(Z) %*% ZZ.inv

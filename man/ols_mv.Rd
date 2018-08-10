@@ -7,7 +7,7 @@
 ols_mv(Y, p)
 }
 \arguments{
-\item{Y}{A \code{(N x K)} matrix carrying the data for estimation. There are
+\item{Y}{A \code{(K x N)} matrix carrying the data for estimation. There are
 \code{N} observations for each of the \code{K} variables.}
 
 \item{p}{A scalar integer, the lag length used for estimation.}
@@ -43,7 +43,6 @@ and residuals in a matrix.
 \section{TODO}{
 
 \itemize{
-\item switch dimension of data
 \item add switch for intercept
 }
 }
