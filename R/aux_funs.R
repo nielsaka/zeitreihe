@@ -16,19 +16,11 @@
 #'
 #'@examples
 #' K <- 3
+#' N <- 6
 #' p <- 2
-#' N <- 2E4
 #'
-#' A <- matrix(0.1, K, K * p)
-#' Y0 <- matrix(0, K, p)
-#' U <- matrix(rnorm(K * N), K, N)
-#' Y <- create_varp_data(A, Y0, U)
-#'
-#' X <- Y2Z(Y, p)
-#' Y <- X[seq_len(K), ] # has correct sample size
-#' Z <- X[-seq_len(K), ]
-#'
-#' B <- Y %*% t(Z) %*% solve(Z %*% t(Z))
+#' Y <- matrix(seq_len(K*N), nrow = K)
+#' Z <- Y2Z(Y, p)
 #'
 #'@section TODO:
 #' add sanity checks... data.frame? matrix? dimension? max, min p?
@@ -36,9 +28,12 @@
 #'
 Y2Z <- function(Y, p, const = FALSE) {
   # TODO: add sanity checks... data.frame? matrix? dimension?
-  Y <- t(as.matrix(Y))
+
+  K <- var_length(Y)
   nu <- if(const) 1 else numeric(0)
-  rbind(nu, t(embed(Y, p + 1)))
+
+  Y <- t(as.matrix(Y))
+  rbind(nu, t(embed(Y, p + 1))[-seq_len(K), ])
 }
 ###############################################################################.
 #' Title

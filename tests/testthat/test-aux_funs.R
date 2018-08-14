@@ -1,33 +1,37 @@
 context("Testing small auxiliary functions")
 
 test_that("Transformation Y2Z() notation works", {
-  # simple data matrix with K = 5 variables and T = 6 observations, p = 3 lags.
-  K <- 5; T <- 6; p <- 3
-  Y <- t(matrix(seq_len(K*T), ncol = K))
-  out <- Y2Z(Y, p)
 
-  expect_equivalent(Y[1, -seq_len(p)], out[1, ])
-  expect_equivalent(Y[3, seq_len(p)], out[K*p + 3, ])
+   # simple data matrix
 
-  # proper data and use for estimation
-  set.seed(2^12-1)
-  K <- 3; Tt <- 5E4
-  B1 <- matrix(0.15, K, K); diag(B1) <- 0.2
-  B2 <- matrix(0, K, K)
-  B <- cbind(B1, B2)
-  UU <- matrix(rnorm(K * Tt), K, Tt)
-  Z_0 <- matrix(0, K, 2)
+  K <- 3
+  N <- 6
+  p <- 2
 
-  Y <- create_varp_data(B, Z_0, UU)
+  Y <- matrix(seq_len(K*N), nrow = K)
+  Z <- Y2Z(Y, p)
 
-  X <- Y2Z(Y, p = 4)
-  Y <- X[seq_len(K), ]
-  Z <- X[-seq_len(K), ]
+  expect_equivalent(c(Y[, 2], Y[, 1]), Z[, 1])
+  expect_equal(dim(Z), c(K * p, N - p))
 
-  # Estimate coefficients with OLS
-  B3 <- Y %*% t(Z) %*% solve(Z %*% t(Z))
+  ###
+
+  skip_if(save_time)
+
+  # proper data for estimation
+
+  K <- 2
+  N <- 2E5
+  p <- 3
+
+  Y <- do.call("create_varp_data", prep_input_varp(K, N, p))
+  Z <- Y2Z(Y, p)
+  Y <- Y[, -seq_len(p)]
+
+  # estimate coefficients with OLS
+  A <- Y %*% t(Z) %*% solve(Z %*% t(Z))
 
   # and compare to original values
   # deviation still quite large, but narrow down as n -> inf
-  expect_equal(sum(abs(B3)), sum(abs(B)), tolerance = 15e-2, scale = 1)
+  expect_equivalent(A, make_A(K, p), tolerance = 2e-3, scale = 1)
 })
