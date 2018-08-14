@@ -53,20 +53,16 @@ Y2Z <- function(Y, p) {
 #' check_stability(A)
 #'
 check_stability <- function(A) {
+  K <- var_length(A)
+  p <- lag_length(A)
 
-  K <- nrow(A)
-  p <- ncol(A) / K
-
-
-  # VAR(1) companion form
-  AA <- big_A(A)
+  AA <- companion_format(A)
 
   # some severe numeric mistakes ... floating point arithmetic?
   all(abs(eigen(AA)$values) < 1)
 
   # could also check solutions to characteristic polynomial
   # efficiency?
-
 }
 ###############################################################################.
 #' Title
@@ -78,11 +74,11 @@ check_stability <- function(A) {
 #' @export
 #'
 #' @examples
-mean <- function(A, v) {
-  K <- nrow(A)
-  p <- ncol(A) / K
+mean_process <- function(A, v) {
+  K <- var_length(A)
+  p <- lag_length(A)
 
-  AA <- big_A(A)
+  AA <- companion_format(A)
 
   solve(diag(K * p) - AA) %*% v
 }
@@ -98,9 +94,11 @@ mean <- function(A, v) {
 #' @examples
 covariance <- function(A, SIGMA) {
 # TODO
+# infinite sum... convergent ... tolerance?
+
 }
 ###############################################################################.
-#' Convert VAR(1) companion form to VAR(p)
+#' Convert VAR(1) companion format to VAR(p)
 #'
 #' @param K
 #' @param p
@@ -118,7 +116,15 @@ selector <- function(K, p){
   out
 }
 ###############################################################################.
-big_A <- function(A) {
+#' Convert VAR(p) into VAR(1) companion format
+#'
+#' @param A
+#'
+#' @return
+#' @export
+#'
+#' @examples
+companion_format <- function(A) {
   K <- var_length(A)
   p <- lag_length(A)
 
@@ -127,24 +133,22 @@ big_A <- function(A) {
   rbind(A, XX)
 }
 ###############################################################################.
-#' Title
+#' Extract number of variables
 #'
 #' @param A
 #'
 #' @return
-#' @export
 #'
 #' @examples
 var_length <- function(A) {
   nrow(A)
 }
 ###############################################################################.
-#' Title
+#' Extract number of lags
 #'
 #' @param A
 #'
 #' @return
-#' @export
 #'
 #' @examples
 #'
