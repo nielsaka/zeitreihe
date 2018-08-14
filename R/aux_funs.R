@@ -28,15 +28,19 @@ Y2Z <- function(Y, p, const = TRUE) {
   rbind(nu, t(embed(Y, p + 1))[-seq_len(K), ])
 }
 ###############################################################################.
-#' Title
+#' Check the stability criterion of a VAR(p) model
 #'
-#' @param A A `(K x Kp)` matrix, ...
+#' This function will check whether the process implied by the coefficient
+#' matrix `A` is stable. That is, whether its eigenvalues are all smaller than
+#' one in absolute terms.
 #'
-#' @return
+#' @inheritParams create_varp_data
+#'
+#' @return Boolean scalar. `TRUE` if the criterion is satisfied, otherwise
+#'   `FALSE`.
 #' @export
 #'
 #' @examples
-#'
 #' A <- matrix(c(.5, .4, .1, .5, 0, .25, 0, 0), nrow = 2)
 #' check_stability(A)
 #'
@@ -45,17 +49,11 @@ Y2Z <- function(Y, p, const = TRUE) {
 #'
 #' A <- matrix(c(1, 0, 0, 1, -0.1, 0, 0, -0.1), nrow = 2)
 #' check_stability(A)
-#'
 check_stability <- function(A) {
-  K <- var_length(A)
-  p <- lag_length(A)
-
-  AA <- companion_format(A)
-
-  # some severe numeric mistakes ... floating point arithmetic?
+  AA <- big_A(A)
+  # some noticeable numeric mistakes ... floating point arithmetic?
   all(abs(eigen(AA)$values) < 1)
-
-  # could also check solutions to characteristic polynomial
+  # could also check solutions of characteristic polynomial
   # efficiency?
 }
 ###############################################################################.
