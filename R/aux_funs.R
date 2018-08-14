@@ -1,18 +1,17 @@
 ###############################################################################.
-#'Transform a matrix of time series observations by appending lags
+#'Create a regressor matrix for a VAR(p) model
 #'
-#'A matrix `Y` is transformed into `Z` notation (see Lütkepohl (2005, p. 70)).
-#'This facilitates estimation of VAR(p) models.
+#'Matrix `Y` is transformed into `Z` notation; see Lütkepohl (2005, p. 70).
+#'This transformation facilitates estimation of VAR(p) models.
 #'
 #'@inheritParams ols_mv
 #'
-#'@return A `([K * (p + 1)] x [N - p])` matrix, the first K rows will contain
-#'  the original data and the remaining rows will contain its lags up to order
-#'  p. The columns will contain time periods, of which there are now `N - p`
-#'  left after setting aside pre-sample values for the lags.
-#'
-#'@section Note: For regression purposes, the first K rows would have to be
-#'  discarded as they contain Y itself; see example.
+#'@return A `([K * p + 1] x [N - p])` or `([K * p] x [N - p])`matrix. The
+#'  dimension depends on whether a constant is included. If it is included, the
+#'  first row consists of ones. The next K rows will contain the data lagged by
+#'  one time period. The remaining rows will contain further lags up to order p.
+#'  The columns will contain time periods of which there are now `N - p` left
+#'  after setting aside pre-sample values for the lags.
 #'
 #'@examples
 #' K <- 3

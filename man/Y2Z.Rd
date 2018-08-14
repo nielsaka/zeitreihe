@@ -2,44 +2,36 @@
 % Please edit documentation in R/aux_funs.R
 \name{Y2Z}
 \alias{Y2Z}
-\title{Transform a matrix of time-series by adding lags}
+\title{Create a regressor matrix for a VAR(p) model}
 \usage{
-Y2Z(Y, p)
+Y2Z(Y, p, const = TRUE)
 }
 \arguments{
-\item{Y}{A (K x T) matrix, containing the data of the K variables.}
+\item{Y}{A \code{(K x N)} matrix carrying the data for estimation. There are
+\code{N} observations for each of the \code{K} variables.}
 
-\item{p}{An integer, the number of lags to create. Must be greater or equal 0.}
+\item{p}{An integer scalar, the lag length used for estimation.}
+
+\item{const}{A boolean scalar, indicating wether a constant should be
+included. Defaults to \code{TRUE}.}
 }
 \value{
-A ((K * (p + 1)) x (T - p)) matrix, the first K rows will contain the
-original data and the remaining rows will contain its lags up to order p.
-The columns will contain time periods, of which there are now T - p left
+A \code{([K * p + 1] x [N - p])} or \code{([K * p] x [N - p])}matrix. The
+dimension depends on whether a constant is included. If it is included, the
+first row consists of ones. The next K rows will contain the data lagged by
+one time period. The remaining rows will contain further lags up to order p.
+The columns will contain time periods of which there are now \code{N - p} left
 after setting aside pre-sample values for the lags.
 }
 \description{
-A matrix Y is transformed into Z notation (see Lütkepohl (2005, p. 70)). This
-facilitates estimation of VAR(p) models.
+Matrix \code{Y} is transformed into \code{Z} notation; see Lütkepohl (2005, p. 70).
+This transformation facilitates estimation of VAR(p) models.
 }
-\section{Note}{
- For regression purposes, the first K rows would have to be
-discarded as they contain Y itself; see example.
-}
-
-\section{ToDo}{
-
-add sanity checks... data.frame? matrix? dimension? max, min p?
-no intercept (yet)!
-rownames?
-}
-
 \examples{
-Y <- draw_data_DH08_m1(n = 5e5)
+K <- 3
+N <- 6
+p <- 2
 
-X <- Y2Z(Y, p = 4)
-Y <- X[seq_len(4), ] # has correct sample size
-Z <- X[-seq_len(4), ]
-
-B <- Y \%*\% t(Z) \%*\% solve(Z \%*\% t(Z))
-
+Y <- matrix(seq_len(K*N), nrow = K)
+Z <- Y2Z(Y, p)
 }

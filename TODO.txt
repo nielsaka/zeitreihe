@@ -23,6 +23,10 @@ TODO
 DONE
 ----
 
+#### 2018-08-14
+
+* create and refine auxiliary functions: write, document, test
+
 #### 2018-08-10
 
 * add tests for constant, residual covariance matrix, and dimension names of

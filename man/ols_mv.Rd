@@ -10,10 +10,10 @@ ols_mv(Y, p, const = TRUE)
 \item{Y}{A \code{(K x N)} matrix carrying the data for estimation. There are
 \code{N} observations for each of the \code{K} variables.}
 
-\item{p}{A scalar integer, the lag length used for estimation.}
+\item{p}{An integer scalar, the lag length used for estimation.}
 
-\item{const}{A scalar boolean, indicating wether a constant should be
-included. Defaults to TRUE.}
+\item{const}{A boolean scalar, indicating wether a constant should be
+included. Defaults to \code{TRUE}.}
 }
 \value{
 A list with four elements:
@@ -43,10 +43,3 @@ This routine applies equation-wise OLS to a VAR. It is equivalent to running
 OLS with \code{p} lags for each of the variables and collecting the coefficients
 and residuals in a matrix.
 }
-\section{TODO}{
-
-\itemize{
-\item rownames if Y unnamed? -> no names!
-}
-}
-

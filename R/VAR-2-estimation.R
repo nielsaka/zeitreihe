@@ -122,9 +122,9 @@ sMA_coeffs <- function(PHI, B) {
 #'
 #' @param Y A `(K x N)` matrix carrying the data for estimation. There are
 #' `N` observations for each of the `K` variables.
-#' @param p A scalar integer, the lag length used for estimation.
-#' @param const A scalar boolean, indicating wether a constant should be
-#'   included. Defaults to TRUE.
+#' @param p An integer scalar, the lag length used for estimation.
+#' @param const A boolean scalar, indicating wether a constant should be
+#'   included. Defaults to `TRUE`.
 #'
 #' @return A list with four elements:
 #'
