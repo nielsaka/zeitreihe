@@ -36,3 +36,125 @@ Y2Z <- function(Y, p) {
   Y <- t(as.matrix(Y))
   t(embed(Y, p + 1))
 }
+###############################################################################.
+#' Title
+#'
+#' @param A A `(K x Kp)` matrix, ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+#' A <- matrix(c(.5, .4, .1, .5, 0, .25, 0, 0), nrow = 2)
+#' check_stability(A)
+#'
+#' A <- matrix(c(.5, .4, .1, .5, 0, .25, 1, 1), nrow = 2)
+#' check_stability(A)
+#'
+check_stability <- function(A) {
+
+  K <- nrow(A)
+  p <- ncol(A) / K
+
+
+  # VAR(1) companion form
+  AA <- big_A(A)
+
+  # some severe numeric mistakes ... floating point arithmetic?
+  all(abs(eigen(AA)$values) < 1)
+
+  # could also check solutions to characteristic polynomial
+  # efficiency?
+
+}
+###############################################################################.
+#' Title
+#'
+#' @param A
+#' @param v
+#'
+#' @return
+#' @export
+#'
+#' @examples
+mean <- function(A, v) {
+  K <- nrow(A)
+  p <- ncol(A) / K
+
+  AA <- big_A(A)
+
+  solve(diag(K * p) - AA) %*% v
+}
+###############################################################################.
+#' Title
+#'
+#' @param A
+#' @param SIGMA
+#'
+#' @return
+#' @export
+#'
+#' @examples
+covariance <- function(A, SIGMA) {
+# TODO
+}
+###############################################################################.
+#' Convert VAR(1) companion form to VAR(p)
+#'
+#' @param K
+#' @param p
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+#' J <- selector(4, 2)
+#'
+selector <- function(K, p){
+  out <- matrix(0, K, K * p)
+  diag(out) <- 1
+  out
+}
+###############################################################################.
+big_A <- function(A) {
+  K <- var_length(A)
+  p <- lag_length(A)
+
+  XX <- matrix(0, K * p - K, K * p)
+  diag(XX) <- 1
+  rbind(A, XX)
+}
+###############################################################################.
+#' Title
+#'
+#' @param A
+#'
+#' @return
+#' @export
+#'
+#' @examples
+var_length <- function(A) {
+  nrow(A)
+}
+###############################################################################.
+#' Title
+#'
+#' @param A
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+#' TODO Do not run:
+#' A <- matrix(0, 4, 7)
+#' lag_length(A)
+#'
+lag_length <- function(A) {
+  p <- ncol(A) / nrow(A)
+  stopifnot(p %% 1 == 0)
+  p
+}
+###############################################################################.
