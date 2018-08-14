@@ -57,21 +57,38 @@ check_stability <- function(A) {
   # efficiency?
 }
 ###############################################################################.
-#' Title
+#' Compute the mean of a VAR(p) process
 #'
-#' @param A
-#' @param v
+#' @inheritParams creat_varp_data
+#' @param nu A `(K x 1)` matrix or vector. The intercept parameters of the
+#'   process.
 #'
-#' @return
+#' @return A `(K x 1)` matrix containing the unconditional mean of each
+#'   variable.
 #'
 #' @examples
-mean_var_process <- function(A, v) {
+#'  A <- matrix(c(.5, .4, .1, .5, 0, .25, 0, 0), nrow = 2)
+#'  nu <- c(2, 3)
+#'  mean_var_process(A, nu)
+#'
+#' \dontrun{
+#'
+#'  A <- matrix(c(1, 0, 0, 1), nrow = 2)
+#'  nu <- c(2, 3)
+#'  mean_var_process(A, nu)
+#'  }
+mean_var_process <- function(A, nu) {
+  if(check_stability(A)) {
   K <- var_length(A)
   p <- lag_length(A)
 
-  AA <- companion_format(A)
+  AA <- big_A(A)
+  nunu <- big_nu(nu, p)
 
-  solve(diag(K * p) - AA) %*% v
+  selector(K, p) %*% solve(diag(K * p) - AA) %*% nunu
+  } else {
+    stop("process not stable")
+  }
 }
 ###############################################################################.
 #' Title
