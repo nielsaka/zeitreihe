@@ -1,40 +1,44 @@
 ###############################################################################.
-#'Transform a matrix of time-series by adding lags
+#'Transform a matrix of time series observations by appending lags
 #'
-#'A matrix Y is transformed into Z notation (see Lütkepohl (2005, p. 70)). This
-#'facilitates estimation of VAR(p) models.
+#'A matrix `Y` is transformed into `Z` notation (see Lütkepohl (2005, p. 70)).
+#'This facilitates estimation of VAR(p) models.
 #'
-#'@param Y A `(K x N)` matrix, containing the data of the K variables.
-#'@param p An integer, the number of lags to create. Must be greater or equal 0.
+#'@inheritParams ols_mv
 #'
-#'@return A `([K * (p + 1)] x [N - p])` matrix, the first K rows will contain the
-#'  original data and the remaining rows will contain its lags up to order p.
-#'  The columns will contain time periods, of which there are now N - p left
-#'  after setting aside pre-sample values for the lags.
+#'@return A `([K * (p + 1)] x [N - p])` matrix, the first K rows will contain
+#'  the original data and the remaining rows will contain its lags up to order
+#'  p. The columns will contain time periods, of which there are now `N - p`
+#'  left after setting aside pre-sample values for the lags.
 #'
 #'@section Note: For regression purposes, the first K rows would have to be
 #'  discarded as they contain Y itself; see example.
 #'
 #'@examples
-# TODO: example not working anymore!
-#' Y <- draw_data_DH08_m1(n = 5e5)
+#' K <- 3
+#' p <- 2
+#' N <- 2E4
 #'
-#' X <- Y2Z(Y, p = 4)
-#' Y <- X[seq_len(4), ] # has correct sample size
-#' Z <- X[-seq_len(4), ]
+#' A <- matrix(0.1, K, K * p)
+#' Y0 <- matrix(0, K, p)
+#' U <- matrix(rnorm(K * N), K, N)
+#' Y <- create_varp_data(A, Y0, U)
+#'
+#' X <- Y2Z(Y, p)
+#' Y <- X[seq_len(K), ] # has correct sample size
+#' Z <- X[-seq_len(K), ]
 #'
 #' B <- Y %*% t(Z) %*% solve(Z %*% t(Z))
 #'
-#'@section ToDo:
+#'@section TODO:
 #' add sanity checks... data.frame? matrix? dimension? max, min p?
-#' no intercept (yet)!
 #' rownames?
 #'
-Y2Z <- function(Y, p) {
+Y2Z <- function(Y, p, const = FALSE) {
   # TODO: add sanity checks... data.frame? matrix? dimension?
-  # no intercept (yet)!
   Y <- t(as.matrix(Y))
-  t(embed(Y, p + 1))
+  nu <- if(const) 1 else numeric(0)
+  rbind(nu, t(embed(Y, p + 1)))
 }
 ###############################################################################.
 #' Title
