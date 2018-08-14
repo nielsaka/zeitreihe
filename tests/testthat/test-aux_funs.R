@@ -9,7 +9,7 @@ test_that("Transformation Y2Z() notation works", {
   p <- 2
 
   Y <- matrix(seq_len(K*N), nrow = K)
-  Z <- Y2Z(Y, p)
+  Z <- Y2Z(Y, p, const = FALSE)
 
   expect_equivalent(c(Y[, 2], Y[, 1]), Z[, 1])
   expect_equal(dim(Z), c(K * p, N - p))
@@ -25,7 +25,7 @@ test_that("Transformation Y2Z() notation works", {
   p <- 3
 
   Y <- do.call("create_varp_data", prep_input_varp(K, N, p))
-  Z <- Y2Z(Y, p)
+  Z <- Y2Z(Y, p, const = FALSE)
   Y <- Y[, -seq_len(p)]
 
   # estimate coefficients with OLS

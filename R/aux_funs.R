@@ -21,18 +21,11 @@
 #'
 #' Y <- matrix(seq_len(K*N), nrow = K)
 #' Z <- Y2Z(Y, p)
-#'
-#'@section TODO:
-#' add sanity checks... data.frame? matrix? dimension? max, min p?
-#' rownames?
-#'
-Y2Z <- function(Y, p, const = FALSE) {
-  # TODO: add sanity checks... data.frame? matrix? dimension?
-
+Y2Z <- function(Y, p, const = TRUE) {
   K <- var_length(Y)
   nu <- if(const) 1 else numeric(0)
-
   Y <- t(as.matrix(Y))
+
   rbind(nu, t(embed(Y, p + 1))[-seq_len(K), ])
 }
 ###############################################################################.
