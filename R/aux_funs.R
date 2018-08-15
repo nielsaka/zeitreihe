@@ -317,7 +317,7 @@ obs_length <- function(mat) {
 #' @examples
 vech <- function(mat) {
   stopifnot(all(mat == t(mat)))
-  mat[lower.tri(mat, diag = TRUE)]
+  as.matrix(mat[lower.tri(mat, diag = TRUE)])
 }
 ###############################################################################.
 #' Title
@@ -329,7 +329,7 @@ vech <- function(mat) {
 #'
 #' @examples
 vec <- function(mat) {
-  c(mat)
+  as.matrix(c(mat))
 }
 ###############################################################################.
 one_zeros <- function(r, c = 1) {
