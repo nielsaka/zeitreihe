@@ -70,4 +70,20 @@ test_that("Vectorising a matrix works", {
   expect_identical(vec(mat), matrix(1:15, 15, 1))
 })
 
+test_that("Length helpers work", {
+  p <- 3
+  K <- 4
+  N <- as.integer(1E3)
+
+  expect_identical(var_length(matrix(0, K, K * p)), expected = as.integer(K))
+  expect_warning(var_length(1:5), "is not a matrix")
+
+  expect_identical(lag_length(matrix(0, K, K * p)), expected = p)
+  expect_error(lag_length(matrix(0, 4, 7)), "p%%1 == 0 is not TRUE")
+
+  expect_identical(obs_length(matrix(0, K, N)), expected = N)
+})
+
+
+
 

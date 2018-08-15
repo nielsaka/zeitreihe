@@ -265,44 +265,68 @@ big_SIGMA <- function(SIGMA, p) {
 }
 
 ###############################################################################.
-#' Extract number of variables
+#' Retrieve number of variables
 #'
-#' @param mat
+#' Given a matrix of observations, residuals or slope coefficients, retrieve the
+#' number of variables `K`.
 #'
-#' @return
+#' At the moment, this function is just an aptly / intentionally named wrapper of
+#' `nrow(mat)`.
 #'
+#' @param mat `(K x M)` matrix, with `K` being the number of variables.
+#' @return An integer scalar. The number of variables `K`.
 #' @examples
+#' p <- 3
+#' K <- 4
+#' var_length(matrix(0, K, K * p)) == K
 var_length <- function(mat) {
-  # TODO: warn if not a matrix
+  # if mat is a vector, it will return NULL but won't complain.
+  if(!is.matrix(mat)) warning("Argument 'mat' is not a matrix.")
   nrow(mat)
 }
 ###############################################################################.
-#' Extract number of lags
+#' Retrieve number of lags
 #'
-#' @param A
+#' Given a matrix of slope parameters, retrieve the number of lags.
 #'
-#' @return
+#' At the moment, this function is just an intentionally named wrapper of
+#' `ncol(A) / nrow(A)`.
 #'
+#' @inheritParams create_varp_data
+#' @return An integer scalar. The lag length `p`.
 #' @examples
+#' p <- 3
+#' K <- 4
+#' A <- matrix(0, K, K * p)
+#' lag_length(A) == p
 #'
-#' TODO Do not run:
+#' \dontrun{
+#'
 #' A <- matrix(0, 4, 7)
 #' lag_length(A)
-#'
+#' }
 lag_length <- function(A) {
   p <- ncol(A) / nrow(A)
   stopifnot(p %% 1 == 0)
   p
 }
 ###############################################################################.
-#' Title
+#' Retrieve number of observations
 #'
-#' @param mat
+#' Given a matrix of observations or residuals, retrieve the number of sample
+#' observations.
 #'
-#' @return
-#' @export
+#' At the moment, this function is just an intentionally named wrapper of
+#' `ncol(mat)`.
 #'
+#' @param mat A `(K x N)` matrix, with `K` being the number of variables and `N`
+#'   the sample size.
+#' @return An integer scalar. The sample size `N`.
 #' @examples
+#' K <- 4
+#' N <- 1E3
+#'
+#' obs_length(matrix(0, K, N)) == N
 obs_length <- function(mat) {
   ncol(mat)
 }
