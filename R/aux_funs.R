@@ -204,7 +204,8 @@ big_A <- function(A) {
 #' Y <- matrix(1:15, 3, 5)
 #' big_Y(Y, p = 3)
 big_Y <- function(Y, p) {
-  Y2Z(Y, p - 1)
+  #NOT CORRECT ANYMORE ! FIX IT !
+  Y2Z(Y, p, const = FALSE)
 }
 ###############################################################################.
 #' Title
