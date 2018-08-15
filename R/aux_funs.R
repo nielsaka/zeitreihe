@@ -307,27 +307,35 @@ obs_length <- function(mat) {
   ncol(mat)
 }
 ###############################################################################.
-#' Title
+#' Vectorise a symmetric matrix
 #'
-#' @param mat
+#' Vectorise a symmetric matrix by stacking the elements on its lower
+#' triangular matrix including the diagonal.
 #'
-#' @return
-#' @export
+#' @param mat An `(M x M)` matrix with arbitrary dimensions `M`.
+#'
+#' @return A column matrix of dimension `(M^2 + M)/2 x 1`.
 #'
 #' @examples
+#' mat <- matrix(1:8, 4, 4)
+#' mat[upper.tri(mat)] <- t(mat)[upper.tri(mat)]
+#' vech(mat)
 vech <- function(mat) {
   stopifnot(all(mat == t(mat)))
   as.matrix(mat[lower.tri(mat, diag = TRUE)])
 }
 ###############################################################################.
-#' Title
+#' Vectorise a matrix
 #'
-#' @param mat
+#' Vectorise a matrix by stacking its elements in a vector.
 #'
-#' @return
-#' @export
+#' @param mat An `(M x N)` matrix with arbitrary dimensions `M` and `N`.
+#'
+#' @return A column matrix of dimension `NM x 1`.
 #'
 #' @examples
+#' mat <- matrix(1:15, 3, 5)
+#' vec(mat)
 vec <- function(mat) {
   as.matrix(c(mat))
 }

@@ -58,3 +58,16 @@ test_that("Computing unconditional mean works", {
    expect_error(mean_var_process(A, nu), regexp = "process not stable")
 })
 
+test_that("Vectorising a matrix works", {
+  mat <- matrix(1:8, 4, 4)
+  mat[upper.tri(mat)] <- t(mat)[upper.tri(mat)]
+  expect_equal(vech(mat), matrix(c(1, 2, 3, 4, 6, 7, 8, 3, 4, 8), 10, 1))
+  # not identical because vech(mat) returns integer, but expected matrix with
+  # 1, 2, 3, ... is numeric. would have to use 1L, 2L, ...
+
+  mat <- matrix(1:15, 3, 5)
+  vec(mat)
+  expect_identical(vec(mat), matrix(1:15, 15, 1))
+})
+
+
