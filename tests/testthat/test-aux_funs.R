@@ -70,6 +70,51 @@ test_that("Vectorising a matrix works", {
   expect_identical(vec(mat), matrix(1:15, 15, 1))
 })
 
+
+test_that("Converting to VAR(1) companion form works", {
+
+  K <- 4
+  N <- 7
+  p <- 2
+
+  A <- matrix(0.1, K, K * p)
+  cf_A <- big_A(A)
+
+  expect_identical(dim(cf_A), as.integer(c(K * p, K * p)))
+  expect_identical(cf_A[1:K, ], A)
+  expect_identical(
+    cf_A[-(1:K), ],
+    cbind(diag(K * (p - 1)), matrix(0, K * (p - 1), K))
+  )
+
+  Y <- matrix(seq_len(K * N), K, N)
+  cf_Y <- big_Y(Y, p)
+
+  expect_identical(dim(cf_Y), c(K * p, N - p + 1)) # TODO last column missing...
+  expect_equal(c(Y[, 2], Y[, 1]), cf_Y[, 1])
+
+  nu <- as.matrix(seq_len(K))
+  cf_nu <- big_nu(nu, p)
+
+  expect_equal(dim(cf_nu), c(K * p, 1))
+  expect_equal(cf_nu[1:K, , drop = FALSE], nu)
+  expect_equal(unique(cf_nu[-(1:K)]), 0)
+
+  U <- matrix(seq_len(K * N), K, N)
+  cf_U <- big_U(U, p)
+
+  expect_equal(dim(cf_U), c(K * p, N - p + 1)) # TODO fix length; is N actual sample size?
+  expect_equal(cf_U[1:K, ], U)
+  expect_equal(unique(c(cf_U[-(1:K), ])), 0)
+
+  SIGMA <- matrix(0.5, K, K)
+  cf_SIGMA <- big_SIGMA(SIGMA, p = p)
+
+  expect_equal(dim(cf_SIGMA), c(K * p, K * p))
+  expect_equal(cf_SIGMA[1:K, 1:K], SIGMA)
+  expect_equal(unique(c(cf_SIGMA[, -(1:K)], cf_SIGMA[-(1:K), ])), 0)
+})
+
 test_that("Length helpers work", {
   p <- 3
   K <- 4

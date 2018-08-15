@@ -1,6 +1,10 @@
 ----
 TODO
 ----
+
+2. establish convention on sample size N -> with or without pre-sample obs
+    needed for lags? effects output of big_Y and big_U (or input of big_U).
+3. big_Y is broken -> fix it
 4. write, document and test SVAR estimation routine
 5. write custom code for LR test; test; compare to vars package
 6. port code from legacy package on graphical criteria -> function to implement test
@@ -22,6 +26,10 @@ TODO
 ----
 DONE
 ----
+
+#### 2018-08-15
+
+* create and refine auxiliary functions: write, document, test
 
 #### 2018-08-14
 

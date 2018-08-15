@@ -179,7 +179,24 @@ companion_format <- function(Y, nu, A, U) {
   )
 }
 ###############################################################################.
-# TODO: write code, document, test
+#' Convert objects to VAR(1) companion format
+#'
+#' Convert objects such as a matrix of slope parameters `A` or intercepts `nu`,
+#' a matrix of observations `Y` or residuals `U` or a covariance matrix `SIGMA`
+#' such that they correspond to objects taken from a VAR(1) representation.
+#'
+#' @inheritParams create_varp_data
+#'
+#' @return * `big_A` \cr A `(Kp x Kp)` matrix with the slope parameters on the
+#'   first K rows. The remaining rows carry block-diagonal unit matrices and the
+#'   remainder are zeros.
+#' @examples
+#' K <- 4
+#' N <- 7
+#' p <- 2
+#'
+#' A <- matrix(0.1, K, K * p)
+#' big_A(A)
 big_A <- function(A) {
   K <- var_length(A)
   p <- lag_length(A)
@@ -189,82 +206,88 @@ big_A <- function(A) {
   rbind(A, XX)
 }
 ###############################################################################.
-#' Title
+#' @rdname big_A
 #'
-#' @param Y A `(K x N)` matrix, ... TODO: inherit?!
-#' @param p An integer scalar, the lag length TODO: inherit?!
+#' @inheritParams creat_varp_data
+#' @param p An integer scalar. The lag length of the VAR(p) system.
 #'
-#' @return A `(Kp x N-p+1)` matrix. The `p - 1` lags of `Y` are pasted to rows
-#'  below `Y`. This leads to the loss of `p - 1` sample observations.
+#' @return * `big_Y` \cr A `(Kp x N-p+1)` matrix. The `p-1` lags of `Y` are
+#'   pasted as rows below `Y`. This leads to the loss of `p-1` sample
+#'   observations.
 #'
-#'@section Note: difference between big_Y and Y2Z? matrix `Z` has `K*p + 1` rows
-#' whereas the output of `big_Y` has `K*p` rows. The very last lag is missing.
+#' @section Note: difference between big_Y and Y2Z? matrix `Z` has `K*p + 1`
+#'   rows whereas the output of `big_Y` has `K*p` rows. The very last lag is
+#'   missing.
 #'
 #' @examples
-#' Y <- matrix(1:15, 3, 5)
-#' big_Y(Y, p = 3)
+#'
+#' Y <- matrix(seq_len(K * N), K, N)
+#' big_Y(Y, p)
 big_Y <- function(Y, p) {
   #NOT CORRECT ANYMORE ! FIX IT !
   Y2Z(Y, p, const = FALSE)
 }
 ###############################################################################.
-#' Title
+#' @rdname big_A
 #'
-#' @param nu
-#' @param p inherit?!
+#' @inheritParams big_Y
+#' @param nu A `(K x 1)` matrix of intercepts.
 #'
-#' @return
+#' @return * `big_nu` \cr A `(Kp x 1)` colum matrix. The first `K` elements
+#'   correspond to `nu`. The remaining elements are zero.
 #'
 #' @examples
-#' nu <- as.matrix(1:3)
-#' big_nu(nu, p = 2)
 #'
+#' nu <- as.matrix(seq_len(K))
+#' big_nu(nu, p)
 big_nu <- function(nu, p) {
-  # K <- var_length(nu)
-  # rbind(nu, matrix(0, K * (p - 1), 1))
-
   one_zeros(p) %x% nu
 
+  # more efficient? but also more verbose
+  # K <- var_length(nu)
+  # rbind(nu, matrix(0, K * (p - 1), 1))
 }
 ###############################################################################.
-#' Convert matrix of residuals into VAR(1) companion format
+#' @rdname big_A
 #'
 #' @param U A `(K x N)` matrix of residuals.
-#' @param p inherit ..
+#' @inheritParams big_Y
 #'
-#' @return TODO number of columns of matrix?
-#' @export
+#' @return * `big_U` \cr A `(Kp x N)` matrix. The first `K` rows contain the
+#'   residuals, the last `K(p-1)` rows consist of zeros. TODO: does not really
+#'   correspond to the output of `big_Y`. There, it's `N-p+1` columns; here,
+#'   it's `N`.
 #'
 #' @examples
 #'
-#' U <- matrix(1:21, 3, 7)
-#' big_U(U, p = 3)
-#'
+#' U <- matrix(seq_len(K * N), K, N)
+#' big_U(U, p)
 big_U <- function(U, p) {
-  # K <- var_length(U)
-  # N <- obs_length(U)
-
   one_zeros(p) %x% U
 
-  # more efficient (?) but less readable
+  # more efficient? but also more verbose
+  # K <- var_length(U)
+  # N <- obs_length(U)
   # rbind(U, matrix(0, K * (p - 1), N))[, -(seq_len(p -1))]
 }
 ###############################################################################.
-#' Convert a residual covariance matrix into VAR(1) companion form
+#' @rdname big_A
 #'
-#' @param SIGMA
-#' @param p
+#' @param SIGMA A `(K x K)` matrix of covariances. The covariance matrix of the
+#'   residuals `U`.
+#' @inheritParams big_Y
 #'
-#' @return
+#' @return * `big_SIGMA` \cr A `(Kp x Kp)` matrix. The upper left `(K x K)`
+#'   block will contain the original covariance matrix: The remaining elements
+#'   will be zero.
 #'
 #' @examples
-#' SIGMA <- matrix(0.5, 4, 4)
-#' big_SIGMA(SIGMA, p = 3)
 #'
+#' SIGMA <- matrix(0.5, K, K)
+#' big_SIGMA(SIGMA, p = p)
 big_SIGMA <- function(SIGMA, p) {
   one_zeros(p, p) %x% SIGMA
 }
-
 ###############################################################################.
 #' Retrieve number of variables
 #'
