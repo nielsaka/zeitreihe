@@ -257,3 +257,134 @@ FEVD <- function(THETA) {
   out.long
 }
 ###############################################################################.
+#' Maximum likelihood estimation of a VAR(p)
+#'
+#'
+#'
+#'
+#'
+mle_var <- function() {
+
+
+}
+###############################################################################.
+#' Likelihood function
+#'
+#' de-meaned data!
+#'
+#' mu:
+#' alpha = vec(A)
+#' X: de-meaned regressor matrix
+#' U = de_meaned_Y - AX
+#'
+#'
+#'
+
+# example
+
+if(FALSE) {
+
+K <- 3
+N <- 1E2
+p <- 2
+
+set.seed(8191)
+
+A <- matrix(0.1, K, K * p)
+Y0 <- matrix(0, K, p)
+U <- matrix(rnorm(K * N), K, N)
+
+Y <- create_varp_data(A, Y0, U)
+
+log_lik <- log_lik_init(Y, p)
+
+
+mu <- c(0, 0, 0.2)
+A <- matrix(0.13, K, K * p)
+SIGMA <- matrix(0, K, K)
+diag(SIGMA) <- 1
+
+args <- c(mu, vec(A), vec(SIGMA))
+
+log_lik(args)
+
+?optim
+# par = vector of parameters !
+# fn = log_lik
+
+
+lower <- c(rep(-Inf, K + K^2 * p), rep(c(0, rep(-Inf, K)), K - 1), 0)
+
+
+optim(args, log_lik, method = "L-BFGS-B", lower = lower)
+
+}
+
+log_lik_init <- function(Y, p) {
+
+  K <- var_length(Y)
+  Z <- Y2Z(Y, p, const = FALSE)
+  Y <- Y[, -seq_len(p)] # TODO return from Y2Z ??
+  N <- obs_length(Z)
+
+  normalise <- - K * N * log(2 * pi) / 2
+
+  function(args) {
+
+
+
+    # pop(args, K) ?? no, not functional
+    # easier access to mu, A, SIGMA?
+    mu <- args[seq_len(K)]
+    A  <- matrix(args[(K + 1):(K + K^2 * p)], K, K * p)
+    SIGMA <- matrix(args[(K + K^2 * p + 1):(K + K^2 * (p + 1))], K, K) # TODO: DOES NOT COMPLAIN IF NA !!! (add test)
+
+    # recycling... check dimensions?
+    X <- Z - rep(mu, p)
+    U <- Y - mu - A %*% X
+
+    if(det(SIGMA) < 0) browser(skipCalls = 1)
+
+    normalise -
+      N / 2 * log(det(SIGMA)) -
+      1 / 2 * sum(diag(t(U) %*% solve(SIGMA) %*% (U)))
+  }
+}
+
+1) https://cran.r-project.org/web/views/Optimization.html
+
+
+"ConstrOptim" works very well. Here are the details.
+
+# Linearly Constrained Optimization
+#
+# I use it for maximizing the likelihood function.
+#
+# Here is a simple illustration.
+#
+# The function to be maximized is
+#
+# x*(2^(x-1))*e^(-2^x)
+#
+# subject to the constraint that x > 0.
+#
+# Step-1: Construct the function as a user defined function.
+#
+# f = function(x)
+#
+# {
+#
+#   term = x*(2^(x-1))*exp(-2^x)
+#
+#   return(-term) ### since the function will be minimized by default
+#
+# }
+#
+# Step-2: Choose initial solution.
+#
+# init = 1
+#
+# constrOptim(init,f,grad=NULL,ui=1,ci=0)
+
+
+
