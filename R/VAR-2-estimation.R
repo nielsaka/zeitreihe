@@ -262,77 +262,69 @@ FEVD <- function(THETA) {
 #'
 #'
 #'
+#' @examples
+#' K <- 3
+#' N <- 5E2
+#' p <- 2
 #'
-mle_var <- function() {
-
-
-}
-###############################################################################.
-#' Likelihood function
+#' set.seed(8191)
 #'
-#' de-meaned data!
+#' A <- matrix(0.1, K, K * p)
+#' Y0 <- matrix(0, K, p)
+#' U <- matrix(rnorm(K * N), K, N)
 #'
-#' mu:
-#' alpha = vec(A)
-#' X: de-meaned regressor matrix
-#' U = de_meaned_Y - AX
+#' Y <- create_varp_data(A, Y0, U)
 #'
+#' mu <- rep(0, K)
+#' A <- matrix(0.1, K, K * p)
+#' SIGMA <- matrix(0, K, K)
+#' diag(SIGMA) <- 1
 #'
+#' args <- c(mu = mu, a = vec(A), s = vech(SIGMA))
 #'
-
-# example
-
-if(FALSE) {
-
-K <- 3
-N <- 5E2
-p <- 2
-
-set.seed(8191)
-
-A <- matrix(0.1, K, K * p)
-Y0 <- matrix(0, K, p)
-U <- matrix(rnorm(K * N), K, N)
-
-Y <- create_varp_data(A, Y0, U)
-
-log_lik <- log_lik_init(Y, p)
-
-mu <- rep(0, K)
-A <- matrix(0.1, K, K * p)
-SIGMA <- matrix(0, K, K)
-diag(SIGMA) <- 1
-
-args <- c(mu = mu, a = vec(A), s = vech(SIGMA))
-log_lik(args)
-
-ols_fit <- ols_mv(Y = Y, p = p, const = TRUE)
-
-tictoc::tic()
-mle_fit <- optim(args, log_lik, method = "BFGS")
-tictoc::toc()
-
-lower <- c(rep(-Inf, K + K^2 * p), rep(c(0, rep(-Inf, K)), K - 1), 0)
-tictoc::tic()
-# slightly faster: timing 1/3  to 2/3 of BFGS
-# safer?
-mlec_fit <- optim(args, log_lik, method = "L-BFGS-B", lower = lower)
-tictoc::toc()
-
-# tictoc::tic() # super slow. more precise?
-# mle3_fit <- optim(args, log_lik, method = "SANN")
-# tictoc::toc()
-
-# yes, very close!
-mle_fit$par
-mlec_fit$par
-ols_fit$BETA.hat
-ols_fit$SIGMA.hat
+#' ols_fit <- ols_mv(Y = Y, p = p, const = TRUE)
+#'
+#' mle_fit <- mle_var(Y, p)
+#'
+#' # yes, very close!
+#' mle_fit$par
+#' ols_fit$BETA.hat
+#' ols_fit$SIGMA.hat
 
 # TODO work out gradient and feed to optim? faster? not central right now
 
-}
+mle_var <- function(Y, p) {
 
+  K <- var_length(Y)
+  log_lik <- log_lik_init(Y, p)
+
+  # start values; standard? random?
+  mu <- rep(0, K)
+  a  <- c(rep(c(1, rep(0, K)), K)[seq_len(K^2)], rep(0, K^2 * (p - 1)))
+  s  <- vech(diag(K))
+
+  args  <- c(mu = mu, a = a, s = s)
+  lower <- c(rep(-Inf, K + K^2 * p), rep(c(0, rep(-Inf, K)), K - 1), 0)
+  neg_log_lik <- function(args) -1 * log_lik(args)
+
+  mlec_fit <- optim(args, neg_log_lik, method = "L-BFGS-B", lower = lower)
+
+  # TODO factor out, document, test
+  # TODO memoise?
+  seq_mu <- function(K) seq_len(K)
+  seq_a  <- function(K, p) length(seq_mu(K, p)) + seq_len(K^2 * p)
+  seq_s  <- function(K, p) length(seq_a(K, p)) + seq_len((K^2 + K)/2)
+
+  mu <- mlec_fit$par[seq_mu(K, p)]
+  A  <- matrix(mlec_fit$par[seq_a(K, p)], K, K * p)
+  SIGMA <- matrix(duplication_matrix(K) %*% mlec_fit$par(seq_s(K, p)), K, K)
+
+  list(mu = mu,
+       A  = A,
+       SIGMA = SIGMA)
+  # TODO Hessian? Covariance matrix?
+  # TODO compare to results of OLS -> test file
+}
 ###############################################################################.
 #' Create a function to compute the log-likelihood
 #'
