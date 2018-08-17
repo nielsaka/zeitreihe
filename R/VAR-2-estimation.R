@@ -345,9 +345,9 @@ log_lik_init <- function(Y, p) {
 
     if(det(SIGMA) < 0) browser(skipCalls = 1)
 
-    normalise -
+    -(normalise -
       N / 2 * log(det(SIGMA)) -
-      1 / 2 * sum(diag(t(U) %*% solve(SIGMA) %*% (U)))
+      1 / 2 * sum(diag(t(U) %*% solve(SIGMA) %*% (U))))
   }
 }
 
