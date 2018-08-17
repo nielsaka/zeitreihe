@@ -334,13 +334,12 @@ ols_fit$SIGMA.hat
 }
 
 log_lik_init <- function(Y, p) {
-
   K <- var_length(Y)
   Z <- Y2Z(Y, p, const = FALSE)
   Y <- Y[, -seq_len(p)] # TODO return from Y2Z ??
   N <- obs_length(Z)
 
-  normalise <- - K * N * log(2 * pi) / 2
+  constant <- - K * N * log(2 * pi) / 2
 
   function(args) {
     # TODO factor out
@@ -372,11 +371,9 @@ log_lik_init <- function(Y, p) {
     # de-meaned regressor, residuals and crossproduct
     X <- Z - rep(mu, p)
     U <- Y - mu - A %*% X
+    S <- tcrossprod(U)
 
-    if(det(SIGMA) < 0) browser(skipCalls = 1)
-
-    -(normalise -
-      N / 2 * log(det(SIGMA)) -
-      1 / 2 * sum(diag(t(U) %*% solve(SIGMA) %*% (U))))
+    # log-likelihood
+    constant - .5 * N * log(det(SIGMA)) - .5 * sum(diag(solve(SIGMA) %*% S))
   }
 }
