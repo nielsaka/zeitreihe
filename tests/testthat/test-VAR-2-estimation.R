@@ -70,3 +70,38 @@ test_that("Simple multivariate OLS succeeds", {
   expect_equivalent(out$BETA.hat[, -1], make_A(K, p), tol = 4E-3)
 })
 
+test_that("Simple ML estimaton of VAR succeeds", {
+  K <- 3
+  N <- 5E2
+  p <- 2
+
+  Y <- do.call("create_varp_data", prep_input_varp(K, N, p))
+
+  init_mu <- rep(0, K)
+  init_A  <- matrix(0.1, K, K * p)
+  init_SIGMA <- diag(K)
+
+  args <- c(mu = init_mu, a = init_A, s = vech(init_SIGMA))
+  log_lik <- log_lik_init(Y, p)
+
+  expect_equal(log_lik(args), -2250.7876)
+
+  # fail without names
+  args <- c(init_mu, a = init_A, s = vech(init_SIGMA))
+  expect_error(log_lik(args), "check_names(mu, \"mu\") is not TRUE", f = TRUE)
+  args <- c(mu = init_mu, init_A, s = vech(init_SIGMA))
+  expect_error(log_lik(args), "check_names(a, \"a\") is not TRUE", f = TRUE)
+  args <- c(mu = init_mu, a = init_A, vech(init_SIGMA))
+  expect_error(log_lik(args), "check_names(s, \"s\") is not TRUE", f = TRUE)
+  args <- c(mu = init_mu, a = tail(c(init_A), -1), s = c(vech(init_SIGMA), 0))
+  expect_error(log_lik(args), "check_names(a, \"a\") is not TRUE", f = TRUE)
+
+  # fail with NAs
+  args <- c(mu = init_mu, a = init_A, s = c(tail(vech(init_SIGMA), -1), NA))
+  expect_error(log_lik(args), "!any(is.na(args)) is not TRUE", f = TRUE)
+
+  # fails with too many parameters
+  args <- c(mu = init_mu, a = init_A, s = c(vech(init_SIGMA), 1))
+  expect_error(log_lik(args), "length(args) == 1.5 * K + (p + 0.5) ", f = TRUE)
+})
+

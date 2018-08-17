@@ -333,6 +333,41 @@ ols_fit$SIGMA.hat
 
 }
 
+###############################################################################.
+#' Create a function to compute the log-likelihood
+#'
+#' Create the log-likelihood function of a VAR(p) for a particular data set.
+#'
+#' @inheritParams ols_mv
+#' @inheritParams big_Y
+#'
+#' @return A function is returned. It takes as input a named vector `args`. This
+#'   vector consists of the parameters of the VAR(p) model in vectorised form.
+#'   Note that names `mu, a, s` are a requirement. It will return the value of
+#'   the log-likelihood at the specified parameter vector. See the example for
+#'   details.
+#'
+#' @examples
+#' K <- 3
+#' N <- 5E2
+#' p <- 2
+#'
+#' set.seed(8191)
+#'
+#' A <- matrix(0.1, K, K * p)
+#' Y0 <- matrix(0, K, p)
+#' U <- matrix(rnorm(K * N), K, N)
+#'
+#' Y <- create_varp_data(A, Y0, U)
+#'
+#' log_lik <- log_lik_init(Y, p)
+#'
+#' mu <- rep(0, K)
+#' SIGMA <- diag(K)
+# TODO vec and vech are not exported!
+#' args = c(mu = mu, a = vec(A), s = vech(SIGMA))
+#'
+#' log_lik(args)
 log_lik_init <- function(Y, p) {
   K <- var_length(Y)
   Z <- Y2Z(Y, p, const = FALSE)
