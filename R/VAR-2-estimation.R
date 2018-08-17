@@ -343,20 +343,33 @@ log_lik_init <- function(Y, p) {
   normalise <- - K * N * log(2 * pi) / 2
 
   function(args) {
+    # TODO factor out
+    all_true <- function(x) {
+      res <- sapply(x, isTRUE)
+      all(res) && length(res) > 0
+    }
+    check_names <- function(x, name) {
+      all_true(grepl(pattern = paste0("^", name), x = names(x)))
+    }
 
+    stopifnot(!any(is.na(args)))
+    stopifnot(length(args) == 1.5 * K + (p + .5) * K^2)
 
-
-    # pop(args, K) ?? no, not functional
-    # easier access to mu, A, SIGMA?
+    # unconditional means
     mu <- args[seq_len(K)]
-    A  <- matrix(args[(K + 1):(K + K^2 * p)], K, K * p)
-    # SIGMA <- matrix(args[(K + K^2 * p + 1):(K + K^2 * (p + 1))], K, K) # TODO: DOES NOT COMPLAIN IF NA !!! (add test)
-    # SIGMA is symmetric, of course... !
-    # duplication matrix ... ?
-    SIGMA <- matrix(duplication_matrix(K) %*% args[(K + K^2 * p + 1):(K + K^2 * p + (K^2 + K)/2)], K, K)
+    stopifnot(check_names(mu, "mu"))
 
+    # slope parameters
+    a <- args[K + seq_len(K^2 * p)]
+    stopifnot(check_names(a, "a"))
+    A  <- matrix(a, K, K * p)
 
-    # recycling... check dimensions?
+    # residual covariances
+    s <- args[K + K^2 * p + seq_len((K^2 + K)/2)]
+    stopifnot(check_names(s, "s"))
+    SIGMA <- matrix(duplication_matrix(K) %*% s, K, K)
+
+    # de-meaned regressor, residuals and crossproduct
     X <- Z - rep(mu, p)
     U <- Y - mu - A %*% X
 
