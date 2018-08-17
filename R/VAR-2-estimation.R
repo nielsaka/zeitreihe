@@ -285,7 +285,7 @@ mle_var <- function() {
 if(FALSE) {
 
 K <- 3
-N <- 1E2
+N <- 5E2
 p <- 2
 
 set.seed(8191)
@@ -298,25 +298,38 @@ Y <- create_varp_data(A, Y0, U)
 
 log_lik <- log_lik_init(Y, p)
 
-
-mu <- c(0, 0, 0.2)
-A <- matrix(0.13, K, K * p)
+mu <- rep(0, K)
+A <- matrix(0.1, K, K * p)
 SIGMA <- matrix(0, K, K)
 diag(SIGMA) <- 1
 
-args <- c(mu, vec(A), vec(SIGMA))
-
+args <- c(mu = mu, a = vec(A), s = vech(SIGMA))
 log_lik(args)
 
-?optim
-# par = vector of parameters !
-# fn = log_lik
+ols_fit <- ols_mv(Y = Y, p = p, const = TRUE)
 
+tictoc::tic()
+mle_fit <- optim(args, log_lik, method = "BFGS")
+tictoc::toc()
 
 lower <- c(rep(-Inf, K + K^2 * p), rep(c(0, rep(-Inf, K)), K - 1), 0)
+tictoc::tic()
+# slightly faster: timing 1/3  to 2/3 of BFGS
+# safer?
+mlec_fit <- optim(args, log_lik, method = "L-BFGS-B", lower = lower)
+tictoc::toc()
 
+# tictoc::tic() # super slow. more precise?
+# mle3_fit <- optim(args, log_lik, method = "SANN")
+# tictoc::toc()
 
-optim(args, log_lik, method = "L-BFGS-B", lower = lower)
+# yes, very close!
+mle_fit$par
+mlec_fit$par
+ols_fit$BETA.hat
+ols_fit$SIGMA.hat
+
+# TODO work out gradient and feed to optim? faster? not central right now
 
 }
 
@@ -354,41 +367,3 @@ log_lik_init <- function(Y, p) {
       1 / 2 * sum(diag(t(U) %*% solve(SIGMA) %*% (U))))
   }
 }
-
-1) https://cran.r-project.org/web/views/Optimization.html
-
-
-"ConstrOptim" works very well. Here are the details.
-
-# Linearly Constrained Optimization
-#
-# I use it for maximizing the likelihood function.
-#
-# Here is a simple illustration.
-#
-# The function to be maximized is
-#
-# x*(2^(x-1))*e^(-2^x)
-#
-# subject to the constraint that x > 0.
-#
-# Step-1: Construct the function as a user defined function.
-#
-# f = function(x)
-#
-# {
-#
-#   term = x*(2^(x-1))*exp(-2^x)
-#
-#   return(-term) ### since the function will be minimized by default
-#
-# }
-#
-# Step-2: Choose initial solution.
-#
-# init = 1
-#
-# constrOptim(init,f,grad=NULL,ui=1,ci=0)
-
-
-
