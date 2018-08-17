@@ -395,3 +395,74 @@ one_zeros <- function(r, c = 1) {
   mat
 }
 ###############################################################################.
+#' Title
+#'
+#' @param K
+#'
+#' @return
+#'
+#' @examples
+#' duplication_sequence(3)
+duplication_sequence <- function(K) {
+  indx <- numeric(K^2)
+  l <- i <- 1
+  for (col in seq_len(K)) {
+    u <- 0
+    for (row in seq_len(K)) {
+      if (row >= col) {
+        indx[i] <- l
+        l = l + 1
+      } else {
+        indx[i] <- col + u
+        u <- u + (K - row)
+      }
+      i = i + 1
+    }
+  }
+  indx
+}
+###############################################################################.
+#' Title
+#'
+#' @param K
+#'
+#' @return
+#'
+#' @examples
+#'   K <- 6
+#'   AA <- matrix(1:K^2, K, K)
+#'   AA[upper.tri(AA)] <- t(AA)[upper.tri(AA)]
+#'   AA
+#'   recover_AA <- c(duplication_matrix(K) %*% vech(AA))
+#'   all(c(AA) == recover_AA)
+#'   all.equal(AA, matrix(recover_AA, K, K))
+duplication_matrix <- function(K) {
+  res <- matrix(0, K*K, K*(K+1)/2)
+  res[cbind(seq_len(K^2), duplication_sequence(K))] <- 1
+  res
+}
+###############################################################################.
+# TODO compare performance and result to above
+#' Title
+#'
+#' @param K
+#'
+#' @return
+#'
+#' @examples
+# K <- 10
+# all(duplication_sequence(K) == dupl_sequence_2(K))
+dupl_sequence_2 <- function(K) {
+
+  AA <- AA_sym <- matrix(seq_len(K^2), K, K)
+  AA_sym[upper.tri(AA_sym)] <- t(AA)[upper.tri(AA_sym)]
+
+  vec_AA_sym <- vec(AA_sym)
+  vech_AA_sym <- vech(AA_sym)
+
+  indx <- numeric(K^2)
+  for (i in seq_len(K^2)) {
+    indx[i] <- which(vec_AA_sym[i] == vech_AA_sym)
+  }
+  indx
+}
