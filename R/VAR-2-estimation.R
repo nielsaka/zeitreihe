@@ -337,7 +337,11 @@ log_lik_init <- function(Y, p) {
     # easier access to mu, A, SIGMA?
     mu <- args[seq_len(K)]
     A  <- matrix(args[(K + 1):(K + K^2 * p)], K, K * p)
-    SIGMA <- matrix(args[(K + K^2 * p + 1):(K + K^2 * (p + 1))], K, K) # TODO: DOES NOT COMPLAIN IF NA !!! (add test)
+    # SIGMA <- matrix(args[(K + K^2 * p + 1):(K + K^2 * (p + 1))], K, K) # TODO: DOES NOT COMPLAIN IF NA !!! (add test)
+    # SIGMA is symmetric, of course... !
+    # duplication matrix ... ?
+    SIGMA <- matrix(duplication_matrix(K) %*% args[(K + K^2 * p + 1):(K + K^2 * p + (K^2 + K)/2)], K, K)
+
 
     # recycling... check dimensions?
     X <- Z - rep(mu, p)
