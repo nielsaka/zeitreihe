@@ -369,30 +369,21 @@ log_lik_init <- function(Y, p) {
   constant <- - K * N * log(2 * pi) / 2
 
   function(args) {
-    # TODO factor out
-    all_true <- function(x) {
-      res <- sapply(x, isTRUE)
-      all(res) && length(res) > 0
-    }
-    check_names <- function(x, name) {
-      all_true(grepl(pattern = paste0("^", name), x = names(x)))
-    }
-
     stopifnot(!any(is.na(args)))
     stopifnot(length(args) == 1.5 * K + (p + .5) * K^2)
 
     # unconditional means
     mu <- args[seq_len(K)]
-    stopifnot(check_names(mu, "mu"))
+    stopifnot(check_start_all(mu, "mu"))
 
     # slope parameters
     a <- args[K + seq_len(K^2 * p)]
-    stopifnot(check_names(a, "a"))
+    stopifnot(check_start_all(a, "a"))
     A  <- matrix(a, K, K * p)
 
     # residual covariances
     s <- args[K + K^2 * p + seq_len((K^2 + K)/2)]
-    stopifnot(check_names(s, "s"))
+    stopifnot(check_start_all(s, "s"))
     SIGMA <- matrix(duplication_matrix(K) %*% s, K, K)
 
     # de-meaned regressor, residuals and crossproduct

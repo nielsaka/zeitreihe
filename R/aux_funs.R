@@ -466,3 +466,73 @@ dupl_sequence_2 <- function(K) {
   }
   indx
 }
+###############################################################################.
+#' Are all elements TRUE?
+#'
+#' Check whether all elements of a vector, matrix or array are TRUE.
+#'
+#' Note that numeric values are not coerced to logical. See examples.
+#'
+#' @param x A vector, matrix or array.
+#' @return Boolean scalar. TRUE if every element of `x` is TRUE.
+#' @examples
+#' x <- array(TRUE, c(1, 2, 3))
+#' all_true(x)
+#'
+#' x[1, 2, 3] <- FALSE
+#' all_true(x)
+#'
+#' # Numeric is not coerced to logical
+#' x[1, 2, 3] <- 1
+#' all_true(x)
+#'
+#' # A list might fail
+#' y <- list(a = TRUE, b = matrix(TRUE, 3, 3), c = list(TRUE, TRUE))
+#' all_true(y)
+all_true <- function(x) {
+  res <- sapply(x, isTRUE)
+  all(res) && length(res) > 0
+}
+###############################################################################.
+#' Do all names start with "it"?
+#'
+#' Check whether the names of a vector all start with a certain string.
+#'
+#' @param x A vector. The names of the vector will be checked.
+#' @param start A character string.
+#'
+#' @return * check_start \cr A boolean vector of the same length as `x` if `x`
+#'   is named. Each element is either TRUE or FALSE. They are TRUE if the name
+#'   of the element starts with `start`. If `x` did not carry names, a vector of
+#'   length zero is returned.
+#'
+#' @examples
+#' x <- c(tisch = 1, teller = 2, tafel = 3)
+#' name_start(x, "t")
+#'
+#' x <- c(x, 4)
+#' name_start(x, "t")
+#'
+#' x <- 1:4
+#' name_start(x, "t")
+check_start <- function(x, start) {
+  grepl(pattern = paste0("^", start), x = names(x))
+}
+###############################################################################.
+#' @rdname check_start
+#'
+#' @return * `check_start_all` \cr A boolean scalar. TRUE if the names of **all**
+#' elements of `x` start with `start`. Otherwise FALSE.
+#'
+#' @examples
+#' x <- c(tisch = 1, teller = 2, tafel = 3)
+#' check_names(x, "t")
+#'
+#' x <- c(x, 4)
+#' check_names(x, "t")
+#'
+#' x <- 1:4
+#' check_names(x, "t")
+check_start_all <- function(x, start) {
+  all_true(check_start(x, start))
+}
