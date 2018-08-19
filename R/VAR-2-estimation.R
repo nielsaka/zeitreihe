@@ -304,25 +304,34 @@ mle_var <- function(Y, p) {
   s  <- vech(diag(K))
 
   args  <- c(mu = mu, a = a, s = s)
-  lower <- c(rep(-Inf, K + K^2 * p), rep(c(0, rep(-Inf, K)), K - 1), 0)
+  lower <- c(rep(-Inf, length(mu) + length(a)),
+             rep(c(0, rep(-Inf, K)), K - 1), 0)
+
   neg_log_lik <- function(args) -1 * log_lik(args)
 
-  mlec_fit <- optim(args, neg_log_lik, method = "L-BFGS-B", lower = lower)
+  mlec_fit <- optim(args, neg_log_lik, method = "L-BFGS-B", lower = lower,
+                    hessian = TRUE)
 
-  # TODO factor out, document, test
-  # TODO memoise?
-  seq_mu <- function(K) seq_len(K)
-  seq_a  <- function(K, p) length(seq_mu(K, p)) + seq_len(K^2 * p)
-  seq_s  <- function(K, p) length(seq_a(K, p)) + seq_len((K^2 + K)/2)
+  get_elem <- function(x, start) x[check_start(x, start)]
+  get_elem_par <- function(st) get_elem(mlec_fit$par, st)
 
-  mu <- mlec_fit$par[seq_mu(K, p)]
-  A  <- matrix(mlec_fit$par[seq_a(K, p)], K, K * p)
-  SIGMA <- matrix(duplication_matrix(K) %*% mlec_fit$par(seq_s(K, p)), K, K)
+  mu <- get_elem_par("mu")
+  a <- get_elem_par("a")
+  s <- get_elem_par("s")
 
-  list(mu = mu,
-       A  = A,
-       SIGMA = SIGMA)
-  # TODO Hessian? Covariance matrix?
+  BETA.hat <- matrix(c(mu, a), K, K * p + 1)
+  SIGMA.hat <- matrix(duplication_matrix(K) %*% s, K, K)
+  U.hat <- Y[, -(1:p)] - mu - BETA.hat %*% Y2Z(Y, p)
+
+  # no need to switch sign since negative was minimised above.
+  # TODO get rid of warning (slice vector)
+  std.err <- matrix(sqrt(diag(solve(mlec_fit$hessian))), K, K * p + 1)
+
+  list(BETA.hat = BETA.hat,
+       SIGMA.hat= SIGMA.hat,
+       U.hat = U.hat,
+       std.err = std.err)
+  # TODO names of matrices ...
   # TODO compare to results of OLS -> test file
 }
 ###############################################################################.

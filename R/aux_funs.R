@@ -536,3 +536,8 @@ check_start <- function(x, start) {
 check_start_all <- function(x, start) {
   all_true(check_start(x, start))
 }
+# TODO document, test(?)
+# TODO memoise? another package dependency...
+seq_mu <- function(K) if (K > 0) 1:K else stop("K is not positive")
+seq_a  <- function(K, p) length(seq_mu(K)) + 1:(K^2 * p)
+seq_s  <- function(K, p) length(c(seq_mu(K), seq_a(K, p))) + 1:(K^2 + K) / 2
