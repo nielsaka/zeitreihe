@@ -311,11 +311,13 @@ mle_var <- function(Y, p) {
 
   neg_log_lik <- function(args) -1 * log_lik(args)
 
-  mlec_fit <- optim(args, neg_log_lik, method = "L-BFGS-B", lower = lower,
-                    hessian = TRUE)
+  mle_fit <- optim(
+    args, neg_log_lik,
+    method = "L-BFGS-B", lower = lower, hessian = TRUE
+  )
 
   get_elem <- function(x, start) x[check_start(x, start)]
-  get_elem_par <- function(st) get_elem(mlec_fit$par, st)
+  get_elem_par <- function(st) get_elem(mle_fit$par, st)
 
   mu <- get_elem_par("mu")
   a <- get_elem_par("a")
@@ -326,7 +328,7 @@ mle_var <- function(Y, p) {
   U.hat <- Y[, -(1:p)] - mu - BETA.hat %*% Y2Z(Y, p)
 
   # no need to switch sign since negative was minimised above.
-  vari <- diag(solve(mlec_fit$hessian))
+  vari <- diag(solve(mle_fit$hessian))
   std.err <- matrix(
     sqrt(c(get_elem(vari, "mu"), get_elem(vari, "a"))),
     nrow = K, ncol = K * p + 1
