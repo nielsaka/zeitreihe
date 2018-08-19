@@ -286,13 +286,15 @@ FEVD <- function(THETA) {
 #'
 #' mle_fit <- mle_var(Y, p)
 #'
-#' # yes, very close!
-#' mle_fit$par
+#' mle_fit$BETA.hat
 #' ols_fit$BETA.hat
+#'
+#' mle_fit$SIGMA.hat
 #' ols_fit$SIGMA.hat
-
+#'
+#' mle_fit$std.err
+#' ols_fit$std.err
 # TODO work out gradient and feed to optim? faster? not central right now
-
 mle_var <- function(Y, p) {
 
   K <- var_length(Y)
@@ -324,8 +326,11 @@ mle_var <- function(Y, p) {
   U.hat <- Y[, -(1:p)] - mu - BETA.hat %*% Y2Z(Y, p)
 
   # no need to switch sign since negative was minimised above.
-  # TODO get rid of warning (slice vector)
-  std.err <- matrix(sqrt(diag(solve(mlec_fit$hessian))), K, K * p + 1)
+  vari <- diag(solve(mlec_fit$hessian))
+  std.err <- matrix(
+    sqrt(c(get_elem(vari, "mu"), get_elem(vari, "a"))),
+    nrow = K, ncol = K * p + 1
+    )
 
   list(BETA.hat = BETA.hat,
        SIGMA.hat= SIGMA.hat,
