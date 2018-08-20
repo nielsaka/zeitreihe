@@ -20,6 +20,19 @@
 #' documented.
 #'
 #' @export
+#' @examples
+#' K <- 3
+#' N <- 1E3
+#' p <- 2
+#'
+#' A <- cbind(matrix(0.1, K, K), matrix(-0.05, K, K)); diag(A) <- 0.4
+#' B <- matrix(0.4, K, K); B[upper.tri(B)] <- 0
+#' Y0 <-matrix(0, nrow = K, ncol = p)
+#'set.seed(8191)
+#' W <- matrix(rnorm(N * K), nrow = K, ncol = N)
+#'
+# Y <- create_svar_data(A, B, Y0, W)
+# TODO no constant yet ?!
 create_svar_data <- function(A, B, Y0, W) {
   # B - contemporaneous impact of structural innovations
   # A - reduced-form lag coefficients

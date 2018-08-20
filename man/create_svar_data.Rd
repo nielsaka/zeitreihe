@@ -46,6 +46,18 @@ documented.
 by Dirk Eddelbuettel.
 }
 
+\examples{
+K <- 3
+N <- 1E3
+p <- 2
+
+A <- cbind(matrix(0.1, K, K), matrix(-0.05, K, K)); diag(A) <- 0.4
+B <- matrix(0.4, K, K); B[upper.tri(B)] <- 0
+Y0 <-matrix(0, nrow = K, ncol = p)
+set.seed(8191)
+W <- matrix(rnorm(N * K), nrow = K, ncol = N)
+
+}
 \seealso{
 Other functions for creating data: \code{\link{create_varp_data}}
 }
