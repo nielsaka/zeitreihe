@@ -307,7 +307,7 @@ mle_var <- function(Y, p) {
 
   args  <- c(mu = mu, a = a, s = s)
   lower <- c(rep(-Inf, length(mu) + length(a)),
-             rep(c(0, rep(-Inf, K)), K - 1), 0)
+             vech(`diag<-`(matrix(-Inf, K, K), 0)))
 
   neg_log_lik <- function(args) -1 * log_lik(args)
 
