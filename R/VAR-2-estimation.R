@@ -295,16 +295,20 @@ FEVD <- function(THETA) {
 #' mle_fit$std.err
 #' ols_fit$std.err
 # TODO work out gradient and feed to optim? faster? not central right now
-mle_var <- function(Y, p) {
-
+mle_var <- function(Y, p, init, log_lik = log_lik_init(Y, p)) {
   K <- var_length(Y)
-  log_lik <- log_lik_init(Y, p)
 
-  # start values; standard? random?
-  mu <- rep(0, K)
-  a  <- c(rep(c(1, rep(0, K)), K)[seq_len(K^2)], rep(0, K^2 * (p - 1)))
-  s  <- vech(diag(K))
-
+  # start values
+  if (missing(init)) {
+    # standard
+    mu <- rep(0, K)
+    a  <- c(rep(c(1, rep(0, K)), K)[seq_len(K^2)], rep(0, K^2 * (p - 1)))
+    s  <- vech(diag(K))
+  } else {
+    mu <- init$mu
+    a  <- init$a
+    s  <- init$s
+  }
   args  <- c(mu = mu, a = a, s = s)
   lower <- c(rep(-Inf, length(mu) + length(a)),
              vech(`diag<-`(matrix(-Inf, K, K), 0)))
