@@ -61,8 +61,10 @@ conc_log_lik_init <- function(Y, p, B, B_inv) {
   N <- obs_length(Y) - p
 
   ols_fit <- ols_mv(Y, p)
-  # return function that accepts as params elemnts of A and B
-  SIGMA_hat <- ols_fit$SIGMA.hat * (N - K) / N
+  # TODO take into account whether constant was computed;
+  # should not be a fixed "1" below.
+  # return function that accepts as params elements of A and B
+  SIGMA_hat <- ols_fit$SIGMA.hat * (N - K * p - 1) / N
 
   constant <- - K * N * log(2 * pi)
 
