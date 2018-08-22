@@ -1,7 +1,8 @@
 ----
 TODO
 ----
-
+0. finish docs in aux_funs.R
+1. convention on structural effects matrix: BY and BE
 2. establish convention on sample size N -> with or without pre-sample obs
     needed for lags? effects output of big_Y and big_U (or input of big_U).
 3. big_Y is broken -> fix it
@@ -26,6 +27,27 @@ TODO
 ----
 DONE
 ----
+
+#### 2018-08-22
+
+* document SVAR estimation routine
+
+#### 2018-08-21
+
+* check out optimisation routines in R
+
+#### 2018-08-19
+
+* first try at MLE for SVAR
+* improve MLE for VAR
+
+#### 2018-08-17
+
+* improve MLE for VAR
+
+#### 2018-08-16
+
+* first try at MLE for reduced form VAR
 
 #### 2018-08-15
 

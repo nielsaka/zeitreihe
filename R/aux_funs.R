@@ -208,8 +208,7 @@ big_A <- function(A) {
 ###############################################################################.
 #' @rdname big_A
 #'
-#' @inheritParams creat_varp_data
-#' @param p An integer scalar. The lag length of the VAR(p) system.
+#' @inheritParams ols_mv
 #'
 #' @return * `big_Y` \cr A `(Kp x N-p+1)` matrix. The `p-1` lags of `Y` are
 #'   pasted as rows below `Y`. This leads to the loss of `p-1` sample

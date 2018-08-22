@@ -1,59 +1,88 @@
-# first, just-identifying, recursive: ols_mv
-# then decompose residual covmat using cholesky; easy.
-
 ###############################################################################.
-#' Title
+#' Estimate Contemporaneous Structural Effects
 #'
-#' @param Y
-#' @param p
+#' Estimate structural matrices `B_Y` and `B_E` by least squares or
+#' maximum likelihood.
 #'
-#' @return
+#' The two matrices `B_Y` and `B_E` refer to the instantaneous effects matrices
+#' in a vector autoregressive system \deqn{B_Y Y_t = A^*_1Y_{t-1} + \dots +
+#' A^*_pY_{t-p} + B_E E_t.}{B_Y * Y_t = A*(L) Y_t + B_E * E_t.} Thus, `B_Y`
+#' describes the contemporaneous effects between the elements of `Y`. `B_E`
+#' describes the contemporaneous impact a structural error vector `E_t` has on
+#' the `Y_t`.
+#'
+#' * `ols_cholesky` \cr Apply OLS and a Cholesky decomposition for recovering
+#' `B_E` from a simple recursive system. As usual, the ordering of the variables
+#' will matter for a standard Cholesky decomposition. The effect matrix `B_Y` is
+#' assumed to be an identity matrix.
+#'
+#' @inheritParams ols_mv
+#' @return * `ols_cholesky` \cr A `(K x K)` numeric lower triangular matrix.
 #'
 #' @examples
+#' set.seed(8191)
 #'
+#' # number of variables, observations and lag length
 #' K <- 3
 #' N <- 1E6
 #' p <- 2
 #'
+#' # prepare input
 #' A <- cbind(matrix(0.1, K, K), matrix(-0.05, K, K)); diag(A) <- 0.4
 #' B <- matrix(0.4, K, K); B[upper.tri(B)] <- 0
 #' Y0 <-matrix(0, nrow = K, ncol = p)
-#'set.seed(8191)
 #' W <- matrix(rnorm(N * K), nrow = K, ncol = N)
 #'
-# Y <- create_svar_data(A, B, Y0, W)
-# (B_hat <- ols_cholesky(Y, p))
-#'
-#'
+#' # draw data and estimate B_E
+#' Y <- create_svar_data(A, B, Y0, W)
+#' B_E_hat <- ols_cholesky(Y, p)
+#' B_E_hat
 ols_cholesky <- function(Y, p) {
   ols_fit <- ols_mv(Y, p)
   chol_decomp(ols_fit$SIGMA.hat)
 }
-
-# concentrated likelihood
-
+###############################################################################.
+#' Initialise the Concentrated Log-Likelihood
+#'
+#' Create the concentrated log-likelihood function of a structural VAR(p) for a
+#' particular data set. Use it for estimating the contemporaneous structural
+#' parameters `BY` and `BE`.
+#'
+#' @inheritParams ols_mv
+#' @param BY
+#' @param BE
+#'
+#' @return A function. It takes as input a named vector `args`. This vector
+#'   consists of the structural parameters of the SVAR(p) model in vectorised
+#'   form.
+# TODO Note that names `???` are a requirement.
+#' It will return the value of the log-likelihood at the specified parameter
+#' vector. See the example for details.
+#'
 #' @examples
-#' #'
+# TODO factor out common code -> source modular R scripts
+#' set.seed(8191)
+#'
+#' # number of variables, observations and lag length
 #' K <- 3
 #' N <- 1E6
 #' p <- 2
 #'
+#' # prepare input
 #' A <- cbind(matrix(0.1, K, K), matrix(-0.05, K, K)); diag(A) <- 0.4
 #' B <- matrix(0.4, K, K); B[upper.tri(B)] <- 0
 #' Y0 <-matrix(0, nrow = K, ncol = p)
-#'set.seed(8191)
 #' W <- matrix(rnorm(N * K), nrow = K, ncol = N)
 #'
+#' # create data and matrix BE
 #' Y <- create_svar_data(A, B, Y0, W)
-#'
 #' init_B <- diag(K)
 #' init_B_inv <- matrix(0, K, K)
 #' init_B_inv[lower.tri(init_B_inv, diag = TRUE)] <- NA
 #'
+#' # initialise log-likelihood function and evaluate
 #' log_lik <- conc_log_lik_init(Y, p, init_B, init_B_inv)
-#'
 #' log_lik(rep(0.35, 6))
-
 # TODO: use selection matrix C_B instead of specifying B and B_inv ?
 # TODO check identification before creating return function
 conc_log_lik_init <- function(Y, p, B, B_inv) {
@@ -88,18 +117,19 @@ conc_log_lik_init <- function(Y, p, B, B_inv) {
     # maybe just use B1 and B2 from the start?
     B2 <- solve(B_inv)
     S <- t(B) %*% t(B2) %*% B2 %*% B
+    # TODO log(det) using determinant()?
     .5 * (constant + N * (log(det(B)^2) - log(det(B_inv)^2) - sum(diag(S %*% SIGMA_hat))))
   }
-
 }
-
-# combine with modularised function for mle? instead of mle_svar and mle_var?
-
-# second, non-recursive: maximum likelihood
-# work out likelihood
-# optimise over values of A, B  - concentrated likelihood
-# write, document, test (example data? from book?)
-
+###############################################################################
+#' @rdname ols_cholesky
+#'
+#' @details * `mle_svar` \cr ...
+#'
+#' @inheritParams conc_log_lik_init
+#'
+#' @return * `mle_svar` \cr ...
+#'
 #' @examples
 #' K <- 3
 #' N <- 1E6
@@ -121,13 +151,10 @@ conc_log_lik_init <- function(Y, p, B, B_inv) {
 #'# WORKS!
 #'mle_fit_str <- mle_svar(Y, p, B, B_inv)
 #'# won't converge; determinant of SIGMA not always positive?!
-#'# TODO try constraint optimisation again
 #' # mle_fit_red <- mle_var(Y, p)
-#'
-#'
-#'mle_fit_str$value
-#'# mle_fit_red$value
-#'
+# TODO try constraint optimisation again (for mle_var)
+# TODO solve set of equations instead!!
+# TODO combine with modularised function for mle? instead of mle_svar and mle_var?
 mle_svar <- function(Y, p, B, B_inv) {
 
   log_lik <- conc_log_lik_init(Y, p, B, B_inv)

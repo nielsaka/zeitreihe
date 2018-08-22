@@ -8,7 +8,7 @@
 #'   thrown.
 #'
 #' @return A matrix, the 'square root' of matrix \code{A}, as in \eqn{A =
-#'   LL^{T}}{A = LL'}. IS IT L or L'?
+#'   LL^{T}}{A = LL'}. TODO IS IT L or L'?
 #' @export
 chol_decomp <- function(A) {
   if (!isSymmetric(A)) stop("error: matrix not symmetric")
@@ -122,7 +122,7 @@ sMA_coeffs <- function(PHI, B) {
 #'
 #' @param Y A `(K x N)` matrix carrying the data for estimation. There are
 #' `N` observations for each of the `K` variables.
-#' @param p An integer scalar, the lag length used for estimation.
+#' @param p An integer scalar. The lag length of the VAR(p) system.
 #' @param const A boolean scalar, indicating wether a constant should be
 #'   included. Defaults to `TRUE`.
 #'
