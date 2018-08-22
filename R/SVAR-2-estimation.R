@@ -137,7 +137,8 @@ mle_svar <- function(Y, p, B, B_inv) {
 
   mle_fit <- optim(
     args, neg_log_lik,
-    method = "BFGS"
+    method = "L-BFGS-B",
+    control = list(factr = 1e-10, maxit = 50*length(args)^2)
   )
   mle_fit
 }
