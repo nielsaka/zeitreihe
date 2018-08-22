@@ -145,16 +145,19 @@ mle_svar <- function(Y, p, B, B_inv) {
 if (FALSE) {
 
   set.seed(8191)
-  lr_test <- 0
   reps <- 100
+  lr_test <- numeric(reps)
+  freq <- 0
   for(i in 1:reps) {
+    cat(i, "\n")
 
     K <- 3
-    N <- 5E2
+    N <- 1E3
     p <- 2
 
-    A <- cbind(matrix(0.1, K, K), matrix(-0.05, K, K)); diag(A) <- 0.4
-    B_true <- matrix(200, K, K); B_true[upper.tri(B)] <- 0
+    A <- cbind(matrix(0.2, K, K), matrix(-0.05, K, K)); diag(A) <- 0.4
+    B_true <- matrix(0.2, K, K); B_true[upper.tri(B_true)] <- 0
+    diag(B_true) <- 1
     Y0 <-matrix(0, nrow = K, ncol = p)
     W <- matrix(rnorm(N * K), nrow = K, ncol = N)
 
@@ -162,16 +165,14 @@ if (FALSE) {
 
     B <- diag(K)
     B_inv <- matrix(0, K, K)
-    B_inv[lower.tri(init_B_inv, diag = TRUE)] <- NA
-    B_inv[3, 3] = 200
-
+    B_inv[lower.tri(B_inv, diag = TRUE)] <- NA
+    B_inv[3, 3] = 1
 
     ## Likelihood ratio test
 
     # unrestricted
-    ols_fit <- ols_mv(Y, p)
-    # mle_fit_red <- mle_var(Y, p)
-
+    # ols_fit <- ols_mv(Y, p)
+    mle_fit_red <- mle_var(Y, p)
 
     # restricted
     mle_fit <- mle_svar(Y, p, B = B, B_inv = B_inv)
@@ -180,21 +181,38 @@ if (FALSE) {
     g2 <- sum(is.na(B_inv))
     B[is.na(B)] <- mle_fit$par[seq_len(g1)]
     B_inv[is.na(B_inv)] <- mle_fit$par[g1 + seq_len(g2)]
+    B_inv
+    chol_decomp(ols_fit$SIGMA.hat * (N - (K * p) - 1) / N)
+
+    B_inv - chol_decomp(ols_fit$SIGMA.hat * (N - (K * p) - 1) / N)
+
     B2 <- solve(B)
     (SIGMA_r <- B2 %*% B_inv %*% t(B_inv) %*% t(B2))
-    (SIGMA_ur <- ols_fit$SIGMA.hat * (N - (K * p) - 1) / N)
+    # (SIGMA_ur <- ols_fit$SIGMA.hat * (N - (K * p) - 1) / N)
+    (SIGMA_ur <- mle_fit_red$SIGMA.hat)
+    # mle_fit_red$SIGMA.hat - ols_fit$SIGMA.hat
+    # mle_fit_red$SIGMA.hat - ols_fit$SIGMA.hat * (N - (K * p) - 1) / N
+    tcrossprod(B_true)
 
     SIGMA_r - SIGMA_ur
+    det(SIGMA_r)
+    det(SIGMA_ur)
     log(det(SIGMA_r)) - log(det(SIGMA_ur))
 
-    (lr_test <- N * (log(det(SIGMA_r)) - log(det(SIGMA_ur))))
+    z_r <- determinant(SIGMA_r)
+    ldSIGMA_r <- as.numeric(z_r$sign * z_r$modulus)
+
+    z_ur <- determinant(SIGMA_ur)
+    ldSIGMA_ur <- as.numeric(z_ur$sign * z_ur$modulus)
+
+    (lr_test[i] <- N * (ldSIGMA_r - ldSIGMA_ur))
     # TODO lr test varies around 13 (without identifying restrictions). Why??
     # numerical precision; bad optimisation? better with gradient provided?
     # should really be very close to 0
     freq <- freq + (lr_test > qchisq(0.95, 1))
 
   }
-  lr_test / reps
+  lr_test
 }
 
 # TODO
@@ -203,3 +221,12 @@ if (FALSE) {
 # try optim with gradient specified
 # try with lower convergence criterion
 # try alabama::constr.Optim.nl with det(SIGMA) > 0
+# compare to vars package
+# work out solution to set of equations (constrained recursive system)
+
+# Observations
+
+# error in conc_log_lik fixed -> wrong degrees of freedom
+# without overidentifying restrictions, log diff of determinants is at 5E-6. This
+# will lead to lr test statistis of N * 5E-6, so at N = 1E6 it is 5 !!
+# is this due to numerical inprecision??
