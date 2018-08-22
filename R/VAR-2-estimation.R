@@ -411,7 +411,11 @@ log_lik_init <- function(Y, p) {
     U <- Y - mu - A %*% X
     S <- tcrossprod(U)
 
+    # compute log of determinant directly
+    z <- determinant(SIGMA)
+    ldSIGMA <- as.numeric(z$sign * z$modulus)
+
     # log-likelihood
-    constant - .5 * N * log(det(SIGMA)) - .5 * sum(diag(solve(SIGMA) %*% S))
+    constant - .5 * N * ldSIGMA - .5 * sum(diag(solve(SIGMA) %*% S))
   }
 }
