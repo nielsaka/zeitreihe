@@ -45,12 +45,15 @@ ols_cholesky <- function(Y, p) {
 #' Initialise the Concentrated Log-Likelihood
 #'
 #' Create the concentrated log-likelihood function of a structural VAR(p) for a
-#' particular data set. Use it for estimating the contemporaneous structural
-#' parameters `By` and `Be`.
+#' particular data set. Maximise it for estimating the contemporaneous
+#' structural parameters `By` and `Be`.
 #'
 #' @inheritParams ols_mv
-#' @param By
-#' @param Be
+#' @param By A `(K x K)` matrix. Determines the contemporaneous relation between
+#'   the endogeneous variables `y_t`. See examples and details below.
+#' @param Be A `(K x K)` matrix. Determines the contemporaneous impact of a
+#'   structural shock `e_t` on the endogeneous variables `y_t`. See examples and
+#'   details below.
 #'
 #' @return A function. It takes as input a named vector `args`. This vector
 #'   consists of the structural parameters of the SVAR(p) model in vectorised
@@ -122,11 +125,19 @@ conc_log_lik_init <- function(Y, p, By, Be) {
 ###############################################################################
 #' @rdname ols_cholesky
 #'
-#' @details * `mle_svar` \cr ...
+#' @details * `mle_svar` \cr Estimate `By` and `Be` by maximising the
+#'   concentrated log-likelihood. The reduced-form parameters are first
+#'   estimated by OLS while the remaining structural parameters are estimated by
+#'   MLE in a second step. The function covers recursive and non-recursive,
+#'   exactly identified and over-identified systems. The necessary restrictions
+#'   on matrices `By` and `Be` are imposed by assigning numeric values to the
+#'   restricted elements. Unrestricted elements are left to be estimated by
+#'   setting them to `NA`.
 #'
 #' @inheritParams conc_log_lik_init
 #'
-#' @return * `mle_svar` \cr ...
+#' @return * `mle_svar` \cr
+#' TODO standardise and describe return value
 #'
 #' @examples
 #'
@@ -139,7 +150,6 @@ conc_log_lik_init <- function(Y, p, By, Be) {
 #' A <- cbind(matrix(0.1, K, K), matrix(-0.05, K, K)); diag(A) <- 0.4
 #' Be <- matrix(0.4, K, K); Be[upper.tri(Be)] <- 0
 #' Y0 <-matrix(0, nrow = K, ncol = p)
-#'set.seed(8191)
 #' W <- matrix(rnorm(N * K), nrow = K, ncol = N)
 #'
 #' Y <- create_svar_data(A, Be, Y0, W)
@@ -148,11 +158,9 @@ conc_log_lik_init <- function(Y, p, By, Be) {
 #' Be_init <- matrix(0, K, K)
 #' Be_init[lower.tri(Be_init, diag = TRUE)] <- NA
 #'
-#'# sign is not unique !
-#'# WORKS!
-#'mle_fit_str <- mle_svar(Y, p, By_init, Be_init)
-#'# won't converge; determinant of SIGMA not always positive?!
-#' # mle_fit_red <- mle_var(Y, p)
+#' # sign is not unique!
+#' mle_svar(Y, p, By_init, Be_init)
+# TODO won't converge; determinant of SIGMA not always positive?! --> `mle_var(Y, p)`
 # TODO try constraint optimisation again (for mle_var)
 # TODO solve set of equations instead!!
 # TODO combine with modularised function for mle? instead of mle_svar and mle_var?
@@ -161,7 +169,7 @@ mle_svar <- function(Y, p, By, Be) {
   log_lik <- conc_log_lik_init(Y, p, By, Be)
   neg_log_lik <- function(x) -1 * log_lik(x)
 
-  # start values
+  # TODO start values
   # args <- rnorm()
   args <- rep(0.1, sum(is.na(By), is.na(Be)))
 
