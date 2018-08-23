@@ -30,6 +30,7 @@ DONE
 #### 2018-08-23
 
 *  convention on structural effects matrix: By and Be
+* create tests for SVAR estimation
 
 #### 2018-08-22
 
