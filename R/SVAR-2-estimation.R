@@ -17,7 +17,9 @@
 #' assumed to be an identity matrix.
 #'
 #' @inheritParams ols_mv
-#' @return * `ols_cholesky` \cr A `(K x K)` numeric lower triangular matrix.
+#' @return The results may not necessarily be unique. The column sign, for
+#'   example, could be indeterminate.
+#'* `ols_cholesky` \cr A `(K x K)` numeric lower triangular matrix.
 #'
 #' @examples
 #' set.seed(8191)
@@ -77,7 +79,7 @@ ols_cholesky <- function(Y, p) {
 #' Y0 <-matrix(0, nrow = K, ncol = p)
 #' W <- matrix(rnorm(N * K), nrow = K, ncol = N)
 #'
-#' # create data and matrix Be
+#' # create data and set restrictions
 #' Y <- create_svar_data(A, Be, Y0, W)
 #' By_init <- diag(K)
 #' Be_init <- matrix(0, K, K)
@@ -99,6 +101,8 @@ conc_log_lik_init <- function(Y, p, By, Be) {
   SIGMA_hat <- ols_fit$SIGMA.hat * (N - K * p - 1) / N
 
   constant <- - K * N * log(2 * pi)
+
+  # TODO force arguments?!
 
   function(args) {
     stopifnot(!any(is.na(args)))
