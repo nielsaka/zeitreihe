@@ -1,19 +1,19 @@
 ###############################################################################.
 #' Estimate Contemporaneous Structural Effects
 #'
-#' Estimate structural matrices `B_Y` and `B_E` by least squares or
+#' Estimate structural matrices `By` and `Be` by least squares or
 #' maximum likelihood.
 #'
-#' The two matrices `B_Y` and `B_E` refer to the instantaneous effects matrices
-#' in a vector autoregressive system \deqn{B_Y Y_t = A^*_1Y_{t-1} + \dots +
-#' A^*_pY_{t-p} + B_E E_t.}{B_Y * Y_t = A*(L) Y_t + B_E * E_t.} Thus, `B_Y`
-#' describes the contemporaneous effects between the elements of `Y`. `B_E`
-#' describes the contemporaneous impact a structural error vector `E_t` has on
-#' the `Y_t`.
+#' The two matrices `By` and `Be` refer to the instantaneous effects matrices
+#' in a vector autoregressive system \deqn{B_y y_t = A^*_1y_{t-1} + \dots +
+#' A^*_py_{t-p} + B_e e_t.}{By * y_t = A_s(L) y_t + Be * e_t.} Thus, `By`
+#' describes the contemporaneous effects between the elements of `y`. `Be`
+#' describes the contemporaneous impact a structural error vector `e_t` has on
+#' `y_t`.
 #'
 #' * `ols_cholesky` \cr Apply OLS and a Cholesky decomposition for recovering
-#' `B_E` from a simple recursive system. As usual, the ordering of the variables
-#' will matter for a standard Cholesky decomposition. The effect matrix `B_Y` is
+#' `Be` from a simple recursive system. As usual, the ordering of the variables
+#' will matter for a standard Cholesky decomposition. The effect matrix `By` is
 #' assumed to be an identity matrix.
 #'
 #' @inheritParams ols_mv
@@ -29,14 +29,14 @@
 #'
 #' # prepare input
 #' A <- cbind(matrix(0.1, K, K), matrix(-0.05, K, K)); diag(A) <- 0.4
-#' B <- matrix(0.4, K, K); B[upper.tri(B)] <- 0
+#' Be <- matrix(0.4, K, K); Be[upper.tri(Be)] <- 0
 #' Y0 <-matrix(0, nrow = K, ncol = p)
 #' W <- matrix(rnorm(N * K), nrow = K, ncol = N)
 #'
-#' # draw data and estimate B_E
-#' Y <- create_svar_data(A, B, Y0, W)
-#' B_E_hat <- ols_cholesky(Y, p)
-#' B_E_hat
+#' # draw data and estimate Be
+#' Y <- create_svar_data(A, Be, Y0, W)
+#' Be_hat <- ols_cholesky(Y, p)
+#' Be_hat
 ols_cholesky <- function(Y, p) {
   ols_fit <- ols_mv(Y, p)
   chol_decomp(ols_fit$SIGMA.hat)
@@ -46,11 +46,11 @@ ols_cholesky <- function(Y, p) {
 #'
 #' Create the concentrated log-likelihood function of a structural VAR(p) for a
 #' particular data set. Use it for estimating the contemporaneous structural
-#' parameters `BY` and `BE`.
+#' parameters `By` and `Be`.
 #'
 #' @inheritParams ols_mv
-#' @param BY
-#' @param BE
+#' @param By
+#' @param Be
 #'
 #' @return A function. It takes as input a named vector `args`. This vector
 #'   consists of the structural parameters of the SVAR(p) model in vectorised
@@ -60,7 +60,7 @@ ols_cholesky <- function(Y, p) {
 #' vector. See the example for details.
 #'
 #' @examples
-# TODO factor out common code -> source modular R scripts
+#' TODO factor out common code -> source modular R scripts
 #' set.seed(8191)
 #'
 #' # number of variables, observations and lag length
@@ -70,29 +70,29 @@ ols_cholesky <- function(Y, p) {
 #'
 #' # prepare input
 #' A <- cbind(matrix(0.1, K, K), matrix(-0.05, K, K)); diag(A) <- 0.4
-#' B <- matrix(0.4, K, K); B[upper.tri(B)] <- 0
+#' Be <- matrix(0.4, K, K); Be[upper.tri(Be)] <- 0
 #' Y0 <-matrix(0, nrow = K, ncol = p)
 #' W <- matrix(rnorm(N * K), nrow = K, ncol = N)
 #'
-#' # create data and matrix BE
-#' Y <- create_svar_data(A, B, Y0, W)
-#' init_B <- diag(K)
-#' init_B_inv <- matrix(0, K, K)
-#' init_B_inv[lower.tri(init_B_inv, diag = TRUE)] <- NA
+#' # create data and matrix Be
+#' Y <- create_svar_data(A, Be, Y0, W)
+#' By_init <- diag(K)
+#' Be_init <- matrix(0, K, K)
+#' Be_init[lower.tri(Be_init, diag = TRUE)] <- NA
 #'
 #' # initialise log-likelihood function and evaluate
-#' log_lik <- conc_log_lik_init(Y, p, init_B, init_B_inv)
+#' log_lik <- conc_log_lik_init(Y, p, By_init, Be_init)
 #' log_lik(rep(0.35, 6))
-# TODO: use selection matrix C_B instead of specifying B and B_inv ?
+# TODO: use selection matrix C_B instead of specifying By and Be ?
 # TODO check identification before creating return function
-conc_log_lik_init <- function(Y, p, B, B_inv) {
+conc_log_lik_init <- function(Y, p, By, Be) {
   K <- var_length(Y)
   N <- obs_length(Y) - p
 
   ols_fit <- ols_mv(Y, p)
   # TODO take into account whether constant was computed;
   # should not be a fixed "1" below.
-  # return function that accepts as params elements of A and B
+  # return function that accepts as params elements of By and Be
   SIGMA_hat <- ols_fit$SIGMA.hat * (N - K * p - 1) / N
 
   constant <- - K * N * log(2 * pi)
@@ -105,20 +105,18 @@ conc_log_lik_init <- function(Y, p, B, B_inv) {
     # TODO only optimise over non-restricted elements!!
 
     # TODO move to above
-    free_elems <- is.na(B)
-    g1 <- sum(is.na(B))
-    g2 <- sum(is.na(B_inv))
+    free_elems <- is.na(By)
+    g1 <- sum(is.na(By))
+    g2 <- sum(is.na(Be))
 
     # nothin happens if g1 is zero
-    B[is.na(B)] <- args[seq_len(g1)]
-    B_inv[is.na(B_inv)] <- args[g1 + seq_len(g2)]
+    By[is.na(By)] <- args[seq_len(g1)]
+    Be[is.na(Be)] <- args[g1 + seq_len(g2)]
 
-    # TODO here notation B and B_inv is really confusing
-    # maybe just use B1 and B2 from the start?
-    B2 <- solve(B_inv)
-    S <- t(B) %*% t(B2) %*% B2 %*% B
+    Beinv <- solve(Be)
+    S <- t(By) %*% t(Beinv) %*% Beinv %*% By
     # TODO log(det) using determinant()?
-    .5 * (constant + N * (log(det(B)^2) - log(det(B_inv)^2) - sum(diag(S %*% SIGMA_hat))))
+    .5 * (constant + N * (log(det(By)^2) - log(det(Be)^2) - sum(diag(S %*% SIGMA_hat))))
   }
 }
 ###############################################################################
@@ -131,38 +129,41 @@ conc_log_lik_init <- function(Y, p, B, B_inv) {
 #' @return * `mle_svar` \cr ...
 #'
 #' @examples
+#'
+#' set.seed(8191)
+#'
 #' K <- 3
 #' N <- 1E6
 #' p <- 2
 #'
 #' A <- cbind(matrix(0.1, K, K), matrix(-0.05, K, K)); diag(A) <- 0.4
-#' B <- matrix(0.4, K, K); B[upper.tri(B)] <- 0
+#' Be <- matrix(0.4, K, K); Be[upper.tri(Be)] <- 0
 #' Y0 <-matrix(0, nrow = K, ncol = p)
 #'set.seed(8191)
 #' W <- matrix(rnorm(N * K), nrow = K, ncol = N)
 #'
-#' Y <- create_svar_data(A, B, Y0, W)
+#' Y <- create_svar_data(A, Be, Y0, W)
 #'
-#' B <- diag(K)
-#' B_inv <- matrix(0, K, K)
-#' B_inv[lower.tri(B_inv, diag = TRUE)] <- NA
+#' By_init <- diag(K)
+#' Be_init <- matrix(0, K, K)
+#' Be_init[lower.tri(Be_init, diag = TRUE)] <- NA
 #'
 #'# sign is not unique !
 #'# WORKS!
-#'mle_fit_str <- mle_svar(Y, p, B, B_inv)
+#'mle_fit_str <- mle_svar(Y, p, By_init, Be_init)
 #'# won't converge; determinant of SIGMA not always positive?!
 #' # mle_fit_red <- mle_var(Y, p)
 # TODO try constraint optimisation again (for mle_var)
 # TODO solve set of equations instead!!
 # TODO combine with modularised function for mle? instead of mle_svar and mle_var?
-mle_svar <- function(Y, p, B, B_inv) {
+mle_svar <- function(Y, p, By, Be) {
 
-  log_lik <- conc_log_lik_init(Y, p, B, B_inv)
+  log_lik <- conc_log_lik_init(Y, p, By, Be)
   neg_log_lik <- function(x) -1 * log_lik(x)
 
   # start values
   # args <- rnorm()
-  args <- rep(0.1, sum(is.na(B), is.na(B_inv)))
+  args <- rep(0.1, sum(is.na(By), is.na(Be)))
 
   mle_fit <- optim(
     args, neg_log_lik,
@@ -171,6 +172,9 @@ mle_svar <- function(Y, p, B, B_inv) {
   )
   mle_fit
 }
+
+
+
 
 if (FALSE) {
 
@@ -193,10 +197,10 @@ if (FALSE) {
 
     Y <- create_svar_data(A, B_true, Y0, W)
 
-    B <- diag(K)
-    B_inv <- matrix(0, K, K)
-    B_inv[lower.tri(B_inv, diag = TRUE)] <- NA
-    B_inv[3, 3] = 1
+    By <- diag(K)
+    Be <- matrix(0, K, K)
+    Be[lower.tri(Be, diag = TRUE)] <- NA
+    Be[3, 3] = 1
 
     ## Likelihood ratio test
 
@@ -205,19 +209,19 @@ if (FALSE) {
     mle_fit_red <- mle_var(Y, p)
 
     # restricted
-    mle_fit <- mle_svar(Y, p, B = B, B_inv = B_inv)
+    mle_fit <- mle_svar(Y, p, By = By, Be = Be)
 
-    g1 <- sum(is.na(B))
-    g2 <- sum(is.na(B_inv))
-    B[is.na(B)] <- mle_fit$par[seq_len(g1)]
-    B_inv[is.na(B_inv)] <- mle_fit$par[g1 + seq_len(g2)]
-    B_inv
+    g1 <- sum(is.na(By))
+    g2 <- sum(is.na(Be))
+    By[is.na(By)] <- mle_fit$par[seq_len(g1)]
+    Be[is.na(Be)] <- mle_fit$par[g1 + seq_len(g2)]
+    Be
     chol_decomp(ols_fit$SIGMA.hat * (N - (K * p) - 1) / N)
 
-    B_inv - chol_decomp(ols_fit$SIGMA.hat * (N - (K * p) - 1) / N)
+    Be - chol_decomp(ols_fit$SIGMA.hat * (N - (K * p) - 1) / N)
 
-    B2 <- solve(B)
-    (SIGMA_r <- B2 %*% B_inv %*% t(B_inv) %*% t(B2))
+    B2 <- solve(By)
+    (SIGMA_r <- B2 %*% Be %*% t(Be) %*% t(B2))
     # (SIGMA_ur <- ols_fit$SIGMA.hat * (N - (K * p) - 1) / N)
     (SIGMA_ur <- mle_fit_red$SIGMA.hat)
     # mle_fit_red$SIGMA.hat - ols_fit$SIGMA.hat
