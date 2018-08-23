@@ -136,11 +136,11 @@ conc_log_lik_init <- function(Y, p, By, Be) {
 #'
 #' @inheritParams conc_log_lik_init
 #'
-#' @return * `mle_svar` \cr
-#' TODO standardise and describe return value
+#' @return * `mle_svar` \cr A list with two elements `By` and `Be`. Both are `(K
+#'   x K)` numeric matrices. The elements which previously held `NA`s were
+#'   replaced with estimates.
 #'
 #' @examples
-#'
 #' set.seed(8191)
 #'
 #' K <- 3
@@ -158,7 +158,6 @@ conc_log_lik_init <- function(Y, p, By, Be) {
 #' Be_init <- matrix(0, K, K)
 #' Be_init[lower.tri(Be_init, diag = TRUE)] <- NA
 #'
-#' # sign is not unique!
 #' mle_svar(Y, p, By_init, Be_init)
 # TODO won't converge; determinant of SIGMA not always positive?! --> `mle_var(Y, p)`
 # TODO try constraint optimisation again (for mle_var)
@@ -178,11 +177,12 @@ mle_svar <- function(Y, p, By, Be) {
     method = "L-BFGS-B",
     control = list(factr = 1e-10, maxit = 50*length(args)^2)
   )
-  mle_fit
+
+  By[is.na(By)] <- mle_fit$par[seq_len(sum(is.na(By)))]
+  Be[is.na(Be)] <- mle_fit$par[sum(is.na(By)) + seq_len(sum(is.na(Be)))]
+
+  list(By = By, Be = Be)
 }
-
-
-
 
 if (FALSE) {
 
