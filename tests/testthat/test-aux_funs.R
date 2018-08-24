@@ -55,7 +55,7 @@ test_that("Computing unconditional mean works", {
 
    A <- matrix(c(1, 0, 0, 1), nrow = 2)
    nu <- c(2, 3)
-   expect_error(mean_var_process(A, nu), regexp = "process not stable")
+   expect_error(mean_var_process(A, nu), "check_stability(A) is not", f = TRUE)
 })
 
 test_that("Vectorising a matrix works", {

@@ -30,6 +30,7 @@ DONE
 
 * big_Y is broken -> fix it
 * fixing expectation of log_lik/check_start_all and big_U.
+* adapt and document code in aux_funs.R
 
 #### 2018-08-23
 

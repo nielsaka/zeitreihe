@@ -31,8 +31,8 @@ Y2Z <- function(Y, p, const = TRUE) {
 #' Check the stability criterion of a VAR(p) model
 #'
 #' This function will check whether the process implied by the coefficient
-#' matrix `A` is stable. That is, whether its eigenvalues are all smaller than
-#' one in absolute terms.
+#' matrix `A` is stable. That is, whether the eigenvalues of the associated
+#' companion format are all smaller than one in absolute terms.
 #'
 #' @inheritParams create_varp_data
 #'
@@ -78,7 +78,7 @@ check_stability <- function(A) {
 #'  mean_var_process(A, nu)
 #'  }
 mean_var_process <- function(A, nu) {
-  if(check_stability(A)) {
+  stopifnot(check_stability(A))
   K <- var_length(A)
   p <- lag_length(A)
 
@@ -86,36 +86,52 @@ mean_var_process <- function(A, nu) {
   nunu <- big_nu(nu, p)
 
   selector(K, p) %*% solve(diag(K * p) - AA) %*% nunu
-  } else {
-    stop("process not stable")
-  }
 }
 ###############################################################################.
-#' Title
+#' Compute the Covariance Matrix of a VAR(p) Process
 #'
-#' @param A
-#' @param SIGMA
-#' @param h
-#' @param tol
+#' Compute the unconditional covariance matrix of the observations
+#' `y_t`.
 #'
-#' @return
+#' Computing the covariance matrix invloves an infinite sum. Computation is
+#' stopped if the summed differences of the elements of two iterations of the
+#' covariance matrix is less than the tolerance level `tol`.
+#'
+#' @inheritParams create_varp_data
+#' @inheritParams big_SIGMA
+#' @param h An integer scalar, the horizon at which to compute the
+#'   covariances. Defaults to the contemporaneous covariances of `y_t`.
+#' @param tol A numeric scalar, the tolerance level for stopping the
+#'   computation. See Details.
+#'
+#' @return A `(K x K)` numeric matrix. It containes the covariances of `y_t` and
+#'   `y_{t+h}`.
 #'
 #' @section TODO: TEST!!!
 #'
-#' @section Note: implementation is plain brute force with no regard for
-#'   efficiency
+#' @section Implementation: Plain brute force with no regard for
+#'   efficiency.
 #'
 #' @examples
-#' A <- matrix(0.0, 4, 8)
-#' SIGMA <- matrix(0.5, 4, 4)
+#' K <- 4
+#' p <- 2
+#'
+#' A <- matrix(0.0, K, K * p)
+#' SIGMA <- matrix(0.5, K, K)
 #' cov_var_process(A, SIGMA)
-cov_var_process <- function(A, SIGMA, h = 0, tol = 1E-4) {
+#'
+#' A <- matrix(-0.2, K, K * p); diag(A) <- 1:K / 10
+#' cov_var_process(A, SIGMA)
+#' cov_var_process(A, SIGMA, h = 5)
+#' cov_var_process(A, SIGMA, h = 150)
+# TODO better formula? frequency domain? in what ways "better"?
+cov_var_process <- function(A, SIGMA, h = 0, tol = 1E-7) {
+  stopifnot(check_stability(A))
+  K <- var_length(A)
   p <- lag_length(A)
 
   cf_SIGMA <- big_SIGMA(SIGMA, p)
   cf_GAMMA <- cf_SIGMA
-
-  # TODO cf_A <- companion_format(A) # TODO fix arguments
   cf_A <- big_A(A)
 
   cf_A_hi <- cf_A
@@ -123,23 +139,18 @@ cov_var_process <- function(A, SIGMA, h = 0, tol = 1E-4) {
     cf_A_hi <- cf_A_hi %*% cf_A
   }
 
-  # infinite sum... convergent ... tolerance
-  # TODO better formula?
-
   crit <- 1
   cf_A_i <- cf_A
   repeat{
-    cf_GAMMA_cand <- cf_GAMMA + cf_A_hi %*% cf_SIGMA %*% t(cf_A_i)
+    cf_GAMMA_old <- cf_GAMMA
+    cf_GAMMA <- cf_GAMMA + cf_A_hi %*% cf_SIGMA %*% t(cf_A_i)
 
-    crit <- sum(abs(cf_GAMMA_cand - cf_GAMMA))
-    if (crit > tol) cf_GAMMA <- cf_GAMMA_cand else break
+    crit <- sum(abs(cf_GAMMA - cf_GAMMA_old))
+    if (crit < tol) break
 
     cf_A_hi <- cf_A_hi %*% cf_A
     cf_A_i  <- cf_A_i  %*% cf_A
   }
-  # TODO refactor to function?
-  K <- var_length(A)
-  p <- lag_length(A)
   selector(K, p)  %*% cf_GAMMA %*% t(selector(K, p))
 }
 ###############################################################################.
@@ -167,6 +178,7 @@ selector <- function(K, p){
 #' @return
 #'
 #' @examples
+## TODO fix arguments ?
 companion_format <- function(Y, nu, A, U) {
   K <- var_length(A)
   p <- lag_length(A)
@@ -219,6 +231,8 @@ big_A <- function(A) {
 #'   missing.
 #'
 #' @examples
+#' K <- 3
+#' N <- 5
 #'
 #' Y <- matrix(seq_len(K * N), K, N)
 #' big_Y(Y, p)
