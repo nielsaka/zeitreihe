@@ -223,8 +223,7 @@ big_A <- function(A) {
 #' Y <- matrix(seq_len(K * N), K, N)
 #' big_Y(Y, p)
 big_Y <- function(Y, p) {
-  #NOT CORRECT ANYMORE ! FIX IT !
-  Y2Z(Y, p, const = FALSE)
+  Y2Z(cbind(Y, 1), p, const = FALSE)
 }
 ###############################################################################.
 #' @rdname big_A

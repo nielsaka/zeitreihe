@@ -90,7 +90,7 @@ test_that("Converting to VAR(1) companion form works", {
   Y <- matrix(seq_len(K * N), K, N)
   cf_Y <- big_Y(Y, p)
 
-  expect_identical(dim(cf_Y), c(K * p, N - p + 1)) # TODO last column missing...
+  expect_equal(dim(cf_Y), c(K * p, N - p + 1))
   expect_equal(c(Y[, 2], Y[, 1]), cf_Y[, 1])
 
   nu <- as.matrix(seq_len(K))
