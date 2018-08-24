@@ -152,17 +152,24 @@ cov_var_process <- function(A, SIGMA, h = 0, tol = 1E-7) {
   selector(K, p)  %*% cf_GAMMA %*% t(selector(K, p))
 }
 ###############################################################################.
-#' Convert VAR(1) companion format to VAR(p)
+#' Create Selection Matrix `J`
 #'
-#' @param K
-#' @param p
+#' Create the selection matrix J for converting objects in VAR(1) companion
+#' format to their original VAR(p) representation.
 #'
-#' @return
+#' @param K An integer scalar. The number of variables of the VAR(p) system.
+#' @inheritParams ols_mv
+#'
+#' @return A `(K x Kp)` numerical matrix containing ones and zeros in selected
+#'   places. The first `(K x K)` elements form an identity matrix. The rest are
+#'   zeros.
 #'
 #' @examples
+#' K <- 4
+#' p <- 2
 #'
-#' J <- selector(4, 2)
-#'
+#' J <- selector(K, p)
+# TODO rename to `make_J` ?
 selector <- function(K, p){
   out <- matrix(0, K, K * p)
   diag(out) <- 1
