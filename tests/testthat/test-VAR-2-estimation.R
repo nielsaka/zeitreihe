@@ -88,13 +88,13 @@ test_that("Simple ML estimaton of VAR succeeds", {
 
   # fail without names
   args <- c(init_mu, a = init_A, s = vech(init_SIGMA))
-  expect_error(log_lik(args), "check_names(mu, \"mu\") is not TRUE", f = TRUE)
+  expect_error(log_lik(args), "check_start_all(mu, \"mu\") is not T", f = TRUE)
   args <- c(mu = init_mu, init_A, s = vech(init_SIGMA))
-  expect_error(log_lik(args), "check_names(a, \"a\") is not TRUE", f = TRUE)
+  expect_error(log_lik(args), "check_start_all(a, \"a\") is not T", f = TRUE)
   args <- c(mu = init_mu, a = init_A, vech(init_SIGMA))
-  expect_error(log_lik(args), "check_names(s, \"s\") is not TRUE", f = TRUE)
+  expect_error(log_lik(args), "check_start_all(s, \"s\") is not T", f = TRUE)
   args <- c(mu = init_mu, a = tail(c(init_A), -1), s = c(vech(init_SIGMA), 0))
-  expect_error(log_lik(args), "check_names(a, \"a\") is not TRUE", f = TRUE)
+  expect_error(log_lik(args), "check_start_all(a, \"a\") is not T", f = TRUE)
 
   # fail with NAs
   args <- c(mu = init_mu, a = init_A, s = c(tail(vech(init_SIGMA), -1), NA))

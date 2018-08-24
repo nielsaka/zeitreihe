@@ -29,6 +29,7 @@ DONE
 #### 2018-08-24
 
 * big_Y is broken -> fix it
+* fixing expectation of log_lik/check_start_all and big_U.
 
 #### 2018-08-23
 
