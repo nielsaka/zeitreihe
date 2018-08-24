@@ -558,3 +558,80 @@ check_start_all <- function(x, start) {
 seq_mu <- function(K) if (K > 0) 1:K else stop("K is not positive")
 seq_a  <- function(K, p) length(seq_mu(K)) + 1:(K^2 * p)
 seq_s  <- function(K, p) length(c(seq_mu(K), seq_a(K, p))) + 1:(K^2 + K) / 2
+###############################################################################.
+#' Title
+#'
+#' @param Y
+#' @param Nreal
+#' @param Nsim
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' p <- 2
+#' N <- 25
+#'
+#' Npre <- 2
+#' Nest <- N
+#' Noos <- 5
+#'
+#' Nsim <- Npre + Nest + Noos
+#'
+#' Y <- matrix(1:Nsim, 1, Nsim)
+#' sl <- slice_sample(
+#'   Y,
+#'   Nreal= c(Npre = Npre, Nest = Nest),
+#'   Nsim = c(Noos = Noos)
+#' )
+#'
+#' sl$est
+#'
+#' \dontrun{
+#'slice_sample(Y, Nreal = c(Nest = Nest))
+#' }
+#'
+#'
+# TODO warnings?? !! slice_sample(Y, Nreal(Nest = Nest))
+# check that Nreal and Nsim are vector/list ?
+# TODO if vector not named, won't return
+slice_sample <- function(Y, Nreal, Nsim) {
+  # TODO is not much easier to just pass Nburn, Npre... directly??!!
+  is_error <- function(x) inherits(try(x, silent = TRUE), "try-error")
+  has_templ <- function(obj) function(x) !is_error(obj[[x]])
+  get_templ <- function(obj) function(x) if (has_templ(obj)(x)) obj[[x]] else 0
+
+  get_real <- get_templ(Nreal)
+  get_sim  <- get_templ(Nsim)
+
+  Npre   <- get_real("Npre")
+  Nest   <- get_real("Nest")
+  Ntrain <- get_real("Ntrain")
+  Neval  <- get_real("Neval")
+
+  Nburn <- get_sim("Nburn")
+  Noos  <- get_sim("Noos")
+
+  stopifnot(Nburn + Npre + Nest + Ntrain + Neval + Noos == obs_length(Y))
+  # TODO move matrix check to obs_length(Y), var_length(Y) etc?
+  stopifnot(is.matrix(Y))
+
+  burn  <- Y[,                                        seq_len(Nburn)]
+  pre   <- Y[, Nburn                                + seq_len(Npre)]
+  est   <- Y[, Nburn + Npre                         + seq_len(Nest)]
+  train <- Y[, Nburn + Npre + Nest                  + seq_len(Ntrain)]
+  eval  <- Y[, Nburn + Npre + Nest + Ntrain         + seq_len(Neval)]
+  oos   <- Y[, Nburn + Npre + Nest + Ntrain + Neval + seq_len(Noos)]
+
+ # return all
+
+  K <- var_length(Y)
+  list(
+    burn  = matrix(burn,  nrow = K),
+    pre   = matrix(pre,   nrow = K),
+    est   = matrix(est,   nrow = K),
+    train = matrix(train, nrow = K),
+    eval  = matrix(eval,  nrow = K),
+    oos   = matrix(oos,   nrow = K)
+  )
+}
