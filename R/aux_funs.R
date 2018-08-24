@@ -107,8 +107,6 @@ mean_var_process <- function(A, nu) {
 #' @return A `(K x K)` numeric matrix. It containes the covariances of `y_t` and
 #'   `y_{t+h}`.
 #'
-#' @section TODO: TEST!!!
-#'
 #' @section Implementation: Plain brute force with no regard for
 #'   efficiency.
 #'

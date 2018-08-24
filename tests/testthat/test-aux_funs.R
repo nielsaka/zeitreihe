@@ -58,6 +58,29 @@ test_that("Computing unconditional mean works", {
    expect_error(mean_var_process(A, nu), "check_stability(A) is not", f = TRUE)
 })
 
+test_that("Computing unconditional covariance works", {
+  K <- 4
+  p <- 2
+
+  A <- matrix(0.0, K, K * p)
+  SIGMA <- matrix(0.5, K, K)
+  expect_identical(cov_var_process(A, SIGMA), SIGMA)
+
+  p16 <- function(x) print(x, d = 16)
+
+  A <- matrix(-0.2, K, K * p); diag(A) <- 1:K / 10
+  expect_known_output(
+    p16(cov_var_process(A, SIGMA)),
+    "cov_var_process.txt"
+  )
+  expect_known_output(
+    p16(cov_var_process(A, SIGMA, h = 5)),
+    "cov_var_process2.txt"
+  )
+  expect_equal(cov_var_process(A, SIGMA, h = 150), SIGMA)
+  # TODO could compare to previous code for AR(p) process
+})
+
 test_that("Vectorising a matrix works", {
   mat <- matrix(1:8, 4, 4)
   mat[upper.tri(mat)] <- t(mat)[upper.tri(mat)]
