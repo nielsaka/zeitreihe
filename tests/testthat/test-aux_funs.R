@@ -103,7 +103,7 @@ test_that("Converting to VAR(1) companion form works", {
   U <- matrix(seq_len(K * N), K, N)
   cf_U <- big_U(U, p)
 
-  expect_equal(dim(cf_U), c(K * p, N - p + 1)) # TODO fix length; is N actual sample size?
+  expect_equal(dim(cf_U), c(K * p, N))
   expect_equal(cf_U[1:K, ], U)
   expect_equal(unique(c(cf_U[-(1:K), ])), 0)
 
@@ -128,7 +128,3 @@ test_that("Length helpers work", {
 
   expect_identical(obs_length(matrix(0, K, N)), expected = N)
 })
-
-
-
-
