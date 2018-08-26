@@ -227,8 +227,8 @@ big_A <- function(A) {
 #'
 #' @inheritParams ols_mv
 #'
-#' @return * `big_Y` \cr A `(Kp x N-p+1)` matrix. The `p-1` lags of `Y` are
-#'   pasted as rows below `Y`. This leads to the loss of `p-1` sample
+#' @return * `big_Y` \cr A `(Kp x N)` matrix. The `p-1` lags of `Y` are
+#'   pasted as rows below `Y`. The `p` pre-sample observations are deleted.
 #'   observations.
 #'
 #' @section Note: difference between big_Y and Y2Z? matrix `Z` has `K*p + 1`
@@ -242,7 +242,7 @@ big_A <- function(A) {
 #' Y <- matrix(seq_len(K * N), K, N)
 #' big_Y(Y, p)
 big_Y <- function(Y, p) {
-  Y2Z(cbind(Y, 1), p, const = FALSE)
+  Y2Z(cbind(Y, 1), p, const = FALSE)[, -1]
 }
 ###############################################################################.
 #' @rdname big_A
@@ -271,9 +271,7 @@ big_nu <- function(nu, p) {
 #' @inheritParams big_Y
 #'
 #' @return * `big_U` \cr A `(Kp x N)` matrix. The first `K` rows contain the
-#'   residuals, the last `K(p-1)` rows consist of zeros. TODO: does not really
-#'   correspond to the output of `big_Y`. There, it's `N-p+1` columns; here,
-#'   it's `N`.
+#'   residuals, the last `K(p-1)` rows consist of zeros.
 #'
 #' @examples
 #'
