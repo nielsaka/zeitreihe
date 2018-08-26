@@ -144,12 +144,14 @@ test_that("Length helpers work", {
   N <- as.integer(1E3)
 
   expect_identical(var_length(matrix(0, K, K * p)), expected = as.integer(K))
-  expect_warning(var_length(1:5), "is not a matrix")
+  expect_error(var_length(1:5), "is.matrix(mat) is not TRUE", f = TRUE)
 
   expect_identical(lag_length(matrix(0, K, K * p)), expected = p)
   expect_error(lag_length(matrix(0, 4, 7)), "p%%1 == 0 is not TRUE")
+  expect_error(lag_length(1:5), "is.matrix(A) is not TRUE", f = TRUE)
 
   expect_identical(obs_length(matrix(0, K, N)), expected = N)
+  expect_error(obs_length(1:5), "is.matrix(mat) is not TRUE", f = TRUE)
 })
 
 test_that("the sample is split", {

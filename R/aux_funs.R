@@ -320,9 +320,13 @@ big_SIGMA <- function(SIGMA, p) {
 #' p <- 3
 #' K <- 4
 #' var_length(matrix(0, K, K * p)) == K
+#'
+#' \dontrun{
+#'
+#' var_length(1:K)
+#' }
 var_length <- function(mat) {
-  # if mat is a vector, it will return NULL but won't complain.
-  if(!is.matrix(mat)) warning("Argument 'mat' is not a matrix.")
+  stopifnot(is.matrix(mat))
   nrow(mat)
 }
 ###############################################################################.
@@ -345,8 +349,10 @@ var_length <- function(mat) {
 #'
 #' A <- matrix(0, 4, 7)
 #' lag_length(A)
+#' lag_length(A[1, ])
 #' }
 lag_length <- function(A) {
+  stopifnot(is.matrix(A))
   p <- ncol(A) / nrow(A)
   stopifnot(p %% 1 == 0)
   p
@@ -368,7 +374,13 @@ lag_length <- function(A) {
 #' N <- 1E3
 #'
 #' obs_length(matrix(0, K, N)) == N
+#'
+#' \dontrun{
+#'
+#' obs_length(1:K)
+#' }
 obs_length <- function(mat) {
+  stopifnot(is.matrix(mat))
   ncol(mat)
 }
 ###############################################################################.
@@ -617,8 +629,6 @@ split_templ <- function(
 ) {
   function(Y) {
     stopifnot(Nburn + Npre + Nest + Ntrain + Neval + Noos == obs_length(Y))
-    # TODO move matrix check to obs_length(Y), var_length(Y) etc?
-    stopifnot(is.matrix(Y))
 
     K <- var_length(Y)
     slice <- function(from, to) matrix(Y[, from + seq_len(to)], nrow = K)
