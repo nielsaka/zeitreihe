@@ -559,13 +559,37 @@ seq_mu <- function(K) if (K > 0) 1:K else stop("K is not positive")
 seq_a  <- function(K, p) length(seq_mu(K)) + 1:(K^2 * p)
 seq_s  <- function(K, p) length(c(seq_mu(K), seq_a(K, p))) + 1:(K^2 + K) / 2
 ###############################################################################.
-#' Title
+#' Sample Splitting
 #'
-#' @param Y
-#' @param Nreal
-#' @param Nsim
+#' Create a function that will perform sample splitting. Initialise it once
+#' by calling `split_templ` and then re-use where applicable.
 #'
-#' @return
+#' The function `split_templ` is a template for creating another function. This
+#' other function will accept a `(K x N)` matrix holding `N` observations of `K`
+#' variables and will slice the columns of that matrix according to the numbers
+#' passed to `split_templ`.
+#'
+#' @param Nburn An integer scalar. The number of **burn-in** observations in a
+#'   simulation context. These are observations that are non-existent if the
+#'   data are actual observation and not synthetically created for simulation
+#'   purposes.
+#' @param Npre An integer scalar. The number of **pre-sample** observations for
+#'   lags etc.
+#' @param Nest An integer scalar. The number of observations available for
+#'   **estimation**.
+#' @param Ntrain An integer scalar. The number of observations for **training**,
+#'   e.g. hyperparameters, forecasts.
+#' @param Neval An integer scalar. The number of observations for model
+#'   **evaluation**.
+#' @param Noos An integer scalar. The number of **true out-of-sample**
+#'   observations for simulation purposes. Can be used for evaluating the final
+#'   outcome (model choice etc.).
+#'
+#' @return A list with six elements. Each of which is a numeric matrix
+#'   corresponding to one of the six arguments passed to `split_templ`. Every
+#'   matrix has `K` rows and as many columns as specified in `split_templ`. If
+#'   an argument of `split_sample` is zero (the default), then the matrix will
+#'   have zero columns.
 #' @export
 #'
 #' @examples
@@ -598,14 +622,17 @@ split_templ <- function(
 
     K <- var_length(Y)
     slice <- function(from, to) matrix(Y[, from + seq_len(to)], nrow = K)
-
+    # TODO alternatively, return two elements, both lists: 'real', 'simulation'
+    # where burn_in and out_of_sample belong to the 'simulation' part and the
+    # rest to 'real'? any additional value?
+    # TODO keep names of 'Nxxx' and 'xxx' identical?
     list(
-      burn  = slice(0, Nburn),
-      pre   = slice(Nburn, Npre),
-      est   = slice(Nburn + Npre, Nest),
-      train = slice(Nburn + Npre + Nest, Ntrain),
-      eval  = slice(Nburn + Npre + Nest + Ntrain, Neval),
-      oos   = slice(Nburn + Npre + Nest + Ntrain + Neval, Noos)
+      burn_in       = slice(0, Nburn),
+      pre_sample    = slice(Nburn, Npre),
+      estimation    = slice(Nburn + Npre, Nest),
+      training      = slice(Nburn + Npre + Nest, Ntrain),
+      evaluation    = slice(Nburn + Npre + Nest + Ntrain, Neval),
+      out_of_sample = slice(Nburn + Npre + Nest + Ntrain + Neval, Noos)
     )
   }
 }

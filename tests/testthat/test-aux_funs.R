@@ -151,3 +151,39 @@ test_that("Length helpers work", {
 
   expect_identical(obs_length(matrix(0, K, N)), expected = N)
 })
+
+test_that("the sample is split", {
+  K <- 1
+  N <- 25
+  p <- 2
+
+  Npre <- 2
+  Nest <- N
+  Noos <- 5
+
+  Nsim <- Npre + Nest + Noos
+
+  Y <- matrix(1:(Nsim * K), K, Nsim)
+  split_sample <- split_templ(Npre = Npre, Nest = Nest, Noos = Noos)
+  spl <- split_sample(Y)
+
+  mtrx <- function(x = integer(0)) matrix(x, nr = K)
+
+  expect_type(spl, "list")
+  sapply(spl, function(x) expect_is(x, "matrix"))
+  expect_identical(
+    object = spl,
+    expected = list(
+      burn_in = mtrx(),
+      pre_sample = mtrx(1:2),
+      estimation = mtrx(3:27),
+      training   = mtrx(),
+      evaluation = mtrx(),
+      out_of_sample = mtrx(28:32)
+    )
+  )
+
+  # wrong sample lengths: does not match ncol of Y
+  split_sample_wrong <- split_templ(Npre = Npre, Nest = Nest)
+  expect_error(split_sample_wrong(Y), "obs_length(Y) is not TRUE", f = TRUE)
+})
