@@ -211,3 +211,12 @@ test_that("the sample is split", {
   split_sample_wrong <- split_templ(Npre = Npre, Nest = Nest)
   expect_error(split_sample_wrong(Y), "obs_length(Y) is not TRUE", f = TRUE)
 })
+
+test_that("Companion format is converted to original format", {
+  K <- 3
+
+  expect_is(expander_e(K), "matrix")
+  expect_equal(expander_e(K, K)[1, 1], 1)
+  expect_equal(unique(expander_e(K, K)[-1]), 0)
+  expect_error(expander_e(K, K + 1))
+})

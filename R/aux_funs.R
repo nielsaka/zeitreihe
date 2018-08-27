@@ -282,7 +282,7 @@ big_Y <- function(Y, p) {
 #'
 #' big_nu(nu, p)
 big_nu <- function(nu, p) {
-  one_zeros(p) %x% nu
+  expander_e(p) %x% nu
 
   # more efficient? but also more verbose
   # K <- var_length(nu)
@@ -302,7 +302,7 @@ big_nu <- function(nu, p) {
 #' U <- matrix(seq_len(K * N), K, N)
 #' big_U(U, p)
 big_U <- function(U, p) {
-  one_zeros(p) %x% U
+  expander_e(p) %x% U
 
   # more efficient? but also more verbose
   # K <- var_length(U)
@@ -325,7 +325,7 @@ big_U <- function(U, p) {
 #' SIGMA <- matrix(0.5, K, K)
 #' big_SIGMA(SIGMA, p = p)
 big_SIGMA <- function(SIGMA, p) {
-  one_zeros(p, p) %x% SIGMA
+  expander_e(p, p) %x% SIGMA
 }
 ###############################################################################.
 #' Retrieve number of variables
@@ -439,7 +439,32 @@ vec <- function(mat) {
   as.matrix(c(mat))
 }
 ###############################################################################.
-one_zeros <- function(r, c = 1) {
+#' Expand a Matrix
+#'
+#' Create a vector or matrix for expanding the dimension of another matrix by
+#' adding rows and columns filled with zeros. Multiply the result of
+#' `expander_e` with a matrix using the Kronecker product. See examples.
+#'
+#' @param r An integer scalar. It specifies the number of rows to create.
+#' @param c An integer scalar. It specifies the number of columns to create.
+#'
+#' `r` and `c` must be equal or `c` must be a one.
+#'
+#' @return An `(r x c)` matrix. The very first element in the
+#' top left corner is a one, the rest are zeros.
+#'
+#' @examples
+#'
+#' expander_e(3)
+#' expander_e(4, 4)
+#'
+#' expander_e(3, 3) %x% matrix(0.1, 4, 4)
+#'
+#' \dontrun{
+#'
+#' expander_e(4, 3)
+#' }
+expander_e <- function(r, c = 1) {
   stopifnot(r == c || c == 1)
   mat <- matrix(0, r, c)
   mat[1] <- 1
