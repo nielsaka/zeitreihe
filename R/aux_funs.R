@@ -188,11 +188,15 @@ companion_format <- function(Y, nu, A, U) {
   K <- var_length(A)
   p <- lag_length(A)
 
+  stopifnot(K == var_length(A), K == var_length(U), K == var_length(nu))
+  stopifnot(obs_length(Y) == obs_length(U) + p)
+
   list(
-    YY   = big_Y(Y, p),
-    AA   = big_A(A),
-    nunu = big_nu(nu, p),
-    UU   = big_U(U, p)
+    Y   = big_Y(Y, p),
+    A   = big_A(A),
+    nu  = big_nu(nu, p),
+    U   = big_U(U, p),
+    Z   = Y2Z(Y, p, const = FALSE)
   )
 }
 ###############################################################################.
