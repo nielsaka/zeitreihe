@@ -176,14 +176,48 @@ selector <- function(K, p){
   out
 }
 ###############################################################################.
-#' Convert VAR(p) into VAR(1) companion format
+#' Convert a VAR(p) model to VAR(1) companion format
 #'
-#' @param A
+#' Convert matrices containig observations, coefficients, residuals and
+#' covariances to their VAR(1) companion format.
 #'
-#' @return
+#' Convert objects such as
+#' * `A` - a matrix of slope parameters
+#' * `nu` -  a column vector of intercepts
+#' * `Y` - a matrix of observations
+#' * `U` - a matrix of  residuals
+#' * `SIGMA` - a covariance matrix
+#'
+#'  such that they correspond to objects taken from a
+#' VAR(1) representation.
+#'
+#' @return * `companion_format` \cr A list with five elements. Four elements
+#'   `Y`, `nu`, `A` and `U` correspond to the output of `big_Y`, `big_nu`,
+#'   `big_A`, and `big_U`. The fifth element is the `(Kp x N)` regressor matrix
+#'   `Z` populated with lags of `Y`.
 #'
 #' @examples
-## TODO fix arguments ?
+#' set.seed(8191)
+#'
+#' K <- 3
+#' N <- 5
+#' p <- 2
+#'
+#' nu <- matrix(1:K, ncol = 1)
+#' A  <- matrix(0.1, K, K * p); diag(A) <- 1:K / 10
+#' U  <- matrix(rnorm(K * N), K, N)
+#' Y0 <- matrix(0, K, p)
+#' Y  <- create_varp_data(A, Y0, U)
+#'
+#' cf <- companion_format(Y, nu, A, U)
+#'
+#' cf$U
+#' cf$Y - cf$A %*% cf$Z
+#'
+#' \dontrun{
+#' # input has to be in matrix form
+#'  companion_format(Y[1, ], nu[1, ], A[1, ], U[1,])
+#' }
 companion_format <- function(Y, nu, A, U) {
   K <- var_length(A)
   p <- lag_length(A)
@@ -200,23 +234,14 @@ companion_format <- function(Y, nu, A, U) {
   )
 }
 ###############################################################################.
-#' Convert objects to VAR(1) companion format
-#'
-#' Convert objects such as a matrix of slope parameters `A` or intercepts `nu`,
-#' a matrix of observations `Y` or residuals `U` or a covariance matrix `SIGMA`
-#' such that they correspond to objects taken from a VAR(1) representation.
-#'
+#' @rdname companion_format
 #' @inheritParams create_varp_data
 #'
 #' @return * `big_A` \cr A `(Kp x Kp)` matrix with the slope parameters on the
 #'   first K rows. The remaining rows carry block-diagonal unit matrices and the
 #'   remainder are zeros.
 #' @examples
-#' K <- 4
-#' N <- 7
-#' p <- 2
 #'
-#' A <- matrix(0.1, K, K * p)
 #' big_A(A)
 big_A <- function(A) {
   K <- var_length(A)
@@ -227,21 +252,17 @@ big_A <- function(A) {
   rbind(A, XX)
 }
 ###############################################################################.
-#' @rdname big_A
-#'
+#' @rdname companion_format
 #' @inheritParams ols_mv
 #'
 #' @return * `big_Y` \cr A `(Kp x N)` matrix. The `p-1` lags of `Y` are
 #'   pasted as rows below `Y`. The `p` pre-sample observations are deleted.
-#'   observations.
 #'
-#' @section Note: difference between big_Y and Y2Z? matrix `Z` has `K*p + 1`
-#'   rows whereas the output of `big_Y` has `K*p` rows. The very last lag is
-#'   missing.
+#' @section Note: The difference between big_Y() and [Y2Z()] is that
+#'   observations in matrix `Z` are shifted back by one time period in
+#'   comparison to `Y`.
 #'
 #' @examples
-#' K <- 3
-#' N <- 5
 #'
 #' Y <- matrix(seq_len(K * N), K, N)
 #' big_Y(Y, p)
@@ -249,7 +270,7 @@ big_Y <- function(Y, p) {
   Y2Z(cbind(Y, 1), p, const = FALSE)[, -1]
 }
 ###############################################################################.
-#' @rdname big_A
+#' @rdname companion_format
 #'
 #' @inheritParams big_Y
 #' @param nu A `(K x 1)` matrix of intercepts.
@@ -259,7 +280,6 @@ big_Y <- function(Y, p) {
 #'
 #' @examples
 #'
-#' nu <- as.matrix(seq_len(K))
 #' big_nu(nu, p)
 big_nu <- function(nu, p) {
   one_zeros(p) %x% nu
@@ -269,7 +289,7 @@ big_nu <- function(nu, p) {
   # rbind(nu, matrix(0, K * (p - 1), 1))
 }
 ###############################################################################.
-#' @rdname big_A
+#' @rdname companion_format
 #'
 #' @param U A `(K x N)` matrix of residuals.
 #' @inheritParams big_Y
@@ -290,14 +310,14 @@ big_U <- function(U, p) {
   # rbind(U, matrix(0, K * (p - 1), N))[, -(seq_len(p -1))]
 }
 ###############################################################################.
-#' @rdname big_A
+#' @rdname companion_format
 #'
 #' @param SIGMA A `(K x K)` matrix of covariances. The covariance matrix of the
 #'   residuals `U`.
 #' @inheritParams big_Y
 #'
 #' @return * `big_SIGMA` \cr A `(Kp x Kp)` matrix. The upper left `(K x K)`
-#'   block will contain the original covariance matrix: The remaining elements
+#'   block will contain the original covariance matrix. The remaining elements
 #'   will be zero.
 #'
 #' @examples

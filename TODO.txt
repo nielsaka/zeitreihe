@@ -2,8 +2,7 @@
 TODO
 ----
 0. finish docs in aux_funs.R
-2. establish convention on sample size N -> with or without pre-sample obs
-    needed for lags? effects output of big_Y and big_U (or input of big_U).
+1. treat `nu` consistently as one column matrix
 4. write, document and test SVAR estimation routine
 5. write custom code for LR test; test; compare to vars package
 6. port code from legacy package on graphical criteria -> function to implement test
@@ -25,6 +24,21 @@ TODO
 ----
 DONE
 ----
+
+#### 2018-08-27
+
+* add sanity checks to companion_format()
+* improve consistent use of N vs N-p
+* document companion_format()
+
+#### 2018-08-26
+
+* document aux_funs
+* test aux_funs
+* fix big_Y again
+
+* establish convention on sample size N -> N defaults to estimation sample
+ (Nest - N estimation sample). see `split_templ`
 
 #### 2018-08-24
 

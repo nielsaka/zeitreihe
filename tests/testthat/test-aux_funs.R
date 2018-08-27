@@ -95,6 +95,7 @@ test_that("Vectorising a matrix works", {
 
 
 test_that("Converting to VAR(1) companion form works", {
+  set.seed(8191)
 
   K <- 4
   N <- 7
@@ -136,6 +137,27 @@ test_that("Converting to VAR(1) companion form works", {
   expect_equal(dim(cf_SIGMA), c(K * p, K * p))
   expect_equal(cf_SIGMA[1:K, 1:K], SIGMA)
   expect_equal(unique(c(cf_SIGMA[, -(1:K)], cf_SIGMA[-(1:K), ])), 0)
+
+  nu <- matrix(1:K, ncol = 1)
+  A <- matrix(0.1, K, K * p); diag(A) <- 1:K / 10
+  U <- matrix(rnorm(K * N), K, N)
+  Y0 <- matrix(0, K, p)
+  Y <- create_varp_data(A, Y0, U)
+
+  cf <- companion_format(Y, nu, A, U)
+  cf_U <- cf$U
+  cf_U2 <- cf$Y - cf$A %*% cf$Z
+
+  expect_equal(cf_U, cf_U2)
+  expect_equal(U, selector(K, p) %*% cf_U2)
+  expect_equal(cf$nu, matrix(c(1:K, rep(0, K)), nrow = K * p))
+
+  # vector input fails
+  expect_error(companion_format(Y[1, ], nu[1], A, U[1, ]))
+  expect_error(companion_format(Y, nu, A, U[1, ]))
+
+  # incompatible dimensions fail
+  expect_error(companion_format(Y, nu, A, U[, -1]))
 })
 
 test_that("Length helpers work", {
