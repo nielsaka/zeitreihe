@@ -6,12 +6,12 @@
 #'
 #'@inheritParams ols_mv
 #'
-#'@return A `([K * p + 1] x [N - p])` or `([K * p] x [N - p])`matrix. The
+#'@return A `([K * p + 1] x N)` or `([K * p] x N)`matrix. The
 #'  dimension depends on whether a constant is included. If it is included, the
 #'  first row consists of ones. The next K rows will contain the data lagged by
 #'  one time period. The remaining rows will contain further lags up to order p.
-#'  The columns will contain time periods of which there are now `N - p` left
-#'  after setting aside pre-sample values for the lags.
+#'  The columns will contain time periods of which there are now `N` left
+#'  after setting aside `p` pre-sample values for as lags.
 #'
 #'@examples
 #' K <- 3

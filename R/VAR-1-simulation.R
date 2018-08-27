@@ -36,10 +36,10 @@ create_arp_data <- function(a, y0, e = rnorm(N), N = 100, intercept = FALSE) {
 #' @param Y0 A `(K x p)` matrix which will be used as starting values. The
 #'   first column corresponds to the very first time period.
 #' @param U  A `(K x N)` matrix, providing the sequence of error vectors.
-#' @return A `(K x (N + p))` matrix holding the observations. The first `p`
+#' @return A `(K x N+p)` matrix holding the observations. The first `p`
 #'   columns will be equal to `Y0`. Column `p + 1` will be equal to `A \\\%*\\\%
 #'   Y0 + U[, 1]`, where `U` contains reduced form errors. The final observation
-#'   of the `K` variables will be in column `N`.
+#'   of the `K` variables will be in column `N+p`.
 #' @family functions for creating data
 #' @section Note: For a faster implementation, see
 #' [this solution](http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/)

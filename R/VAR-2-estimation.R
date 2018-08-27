@@ -120,8 +120,8 @@ sMA_coeffs <- function(PHI, B) {
 #' OLS with `p` lags for each of the variables and collecting the coefficients
 #' and residuals in a matrix.
 #'
-#' @param Y A `(K x N)` matrix carrying the data for estimation. There are
-#' `N` observations for each of the `K` variables.
+#' @param Y A `(K x N+p)` matrix carrying the data for estimation. There are
+#' `N` observations for each of the `K` variables with `p` pre-sample values.
 #' @param p An integer scalar. The lag length of the VAR(p) system.
 #' @param const A boolean scalar, indicating wether a constant should be
 #'   included. Defaults to `TRUE`.
@@ -148,15 +148,15 @@ sMA_coeffs <- function(PHI, B) {
 ols_mv <- function(Y, p, const = TRUE) {
   K <- nrow(Y)
   Kp <- K * p
-  N <- ncol(Y)
+  N <- ncol(Y) - p
   znames <- if (const) "const" else character(0)
   ynames <- if (!is.null(rownames(Y))) rownames(Y) else paste0("y", seq_len(K))
   znames <- c(znames, paste0(ynames, rep(paste0(".l", seq_len(p)), each = K)))
   cc <- if (const) 1 else numeric(0)
   if (p > 0) {
-    Z <- rbind(cc, t(embed(t(Y), p))[, 1:(N - p)])
+    Z <- rbind(cc, t(embed(t(Y), p))[, 1:N])
   } else {
-    Z <- rep(cc, N - p)
+    Z <- rep(cc, N)
   }
   Y <- Y[, -seq_len(p)]
   rownames(Z) <- znames
@@ -164,7 +164,7 @@ ols_mv <- function(Y, p, const = TRUE) {
   ZZ.inv <- invSPD(Z %*% t(Z))
   BETA.hat  <- Y %*% t(Z) %*% ZZ.inv
   U.hat <- Y - BETA.hat %*% Z
-  SIGMA.hat <- U.hat %*% t(U.hat) / (N - p - Kp - const)
+  SIGMA.hat <- U.hat %*% t(U.hat) / (N - Kp - const)
   sigma.beta.hat <- ZZ.inv %x% SIGMA.hat
   sb.hat <- matrix(, K, Kp + const)
   for (i in seq_len(K)) {
