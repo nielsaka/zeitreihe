@@ -471,15 +471,18 @@ expander_e <- function(r, c = 1) {
   mat
 }
 ###############################################################################.
-#' Title
-#'
-#' @param K
-#'
-#' @return
+#' @details * `duplication_sequence` \cr is a helper function for
+#'   `duplication_matrix`.
 #'
 #' @examples
-#' duplication_sequence(3)
+#'
+#' K <- 3
+#'
+#' zeitreihe:::duplication_sequence(K)
+#'
+#' @rdname duplication_matrix
 duplication_sequence <- function(K) {
+  stopifnot(K %% 1 == 0)
   indx <- numeric(K^2)
   l <- i <- 1
   for (col in seq_len(K)) {
@@ -498,49 +501,34 @@ duplication_sequence <- function(K) {
   indx
 }
 ###############################################################################.
-#' Title
+#' Create a Duplication Matrix `D`
 #'
-#' @param K
+#' Create a duplication matrix for duplicating entries in a vector. This is
+#' particularly helpful for converting a vector `vech(M)` to a vector `vec(M)`,
+#' where `M` is a symmetric matrix. See [vec()] and [vech()] and the example
+#' below.
 #'
-#' @return
+#' @inheritParams selector
+#'
+#' @return * `duplication_matrix` \cr A `(K^2 x [K^2 + K]/2)` selection matrix
+#'   containing ones and zeros.
 #'
 #' @examples
-#'   K <- 6
-#'   AA <- matrix(1:K^2, K, K)
-#'   AA[upper.tri(AA)] <- t(AA)[upper.tri(AA)]
-#'   AA
-#'   recover_AA <- c(duplication_matrix(K) %*% vech(AA))
-#'   all(c(AA) == recover_AA)
-#'   all.equal(AA, matrix(recover_AA, K, K))
+#' AA <- matrix(1:K^2, K, K)
+#' AA[upper.tri(AA)] <- t(AA)[upper.tri(AA)]
+#'
+#' AA_vech <- zeitreihe:::vech(AA)
+#' AA_vec  <- zeitreihe:::duplication_matrix(K) %*% AA_vech
+#'
+#' AA_vech
+#' AA_vec
+#'
+#' all(zeitreihe:::vec(AA) == AA_vec)
+#' all.equal(AA, matrix(AA_vec, K, K))
 duplication_matrix <- function(K) {
   res <- matrix(0, K*K, K*(K+1)/2)
   res[cbind(seq_len(K^2), duplication_sequence(K))] <- 1
   res
-}
-###############################################################################.
-# TODO compare performance and result to above
-#' Title
-#'
-#' @param K
-#'
-#' @return
-#'
-#' @examples
-# K <- 10
-# all(duplication_sequence(K) == dupl_sequence_2(K))
-dupl_sequence_2 <- function(K) {
-
-  AA <- AA_sym <- matrix(seq_len(K^2), K, K)
-  AA_sym[upper.tri(AA_sym)] <- t(AA)[upper.tri(AA_sym)]
-
-  vec_AA_sym <- vec(AA_sym)
-  vech_AA_sym <- vech(AA_sym)
-
-  indx <- numeric(K^2)
-  for (i in seq_len(K^2)) {
-    indx[i] <- which(vec_AA_sym[i] == vech_AA_sym)
-  }
-  indx
 }
 ###############################################################################.
 #' Are all elements TRUE?

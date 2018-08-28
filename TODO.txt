@@ -1,7 +1,6 @@
 ----
 TODO
 ----
-0. finish docs in aux_funs.R
 1. treat `nu` consistently as one column matrix
 4. write, document and test SVAR estimation routine
 5. write custom code for LR test; test; compare to vars package
@@ -24,6 +23,10 @@ TODO
 ----
 DONE
 ----
+
+#### 2018-08-28
+
+* document and test duplication_matrix() in aux_funs.R
 
 #### 2018-08-27
 
