@@ -85,7 +85,7 @@ mean_var_process <- function(A, nu) {
   AA <- big_A(A)
   nunu <- big_nu(nu, p)
 
-  selector(K, p) %*% solve(diag(K * p) - AA) %*% nunu
+  selector_J(K, p) %*% solve(diag(K * p) - AA) %*% nunu
 }
 ###############################################################################.
 #' Compute the Covariance Matrix of a VAR(p) Process
@@ -149,12 +149,12 @@ cov_var_process <- function(A, SIGMA, h = 0, tol = 1E-7) {
     cf_A_hi <- cf_A_hi %*% cf_A
     cf_A_i  <- cf_A_i  %*% cf_A
   }
-  selector(K, p)  %*% cf_GAMMA %*% t(selector(K, p))
+  selector_J(K, p)  %*% cf_GAMMA %*% t(selector_J(K, p))
 }
 ###############################################################################.
 #' Create Selection Matrix `J`
 #'
-#' Create the selection matrix J for converting objects in VAR(1) companion
+#' Create the selection matrix `J` for converting objects in VAR(1) companion
 #' format to their original VAR(p) representation.
 #'
 #' @param K An integer scalar. The number of variables of the VAR(p) system.
@@ -168,9 +168,8 @@ cov_var_process <- function(A, SIGMA, h = 0, tol = 1E-7) {
 #' K <- 4
 #' p <- 2
 #'
-#' J <- selector(K, p)
-# TODO rename to `make_J` ?
-selector <- function(K, p){
+#' J <- zeitreihe:::selector_J(K, p)
+selector_J <- function(K, p){
   out <- matrix(0, K, K * p)
   diag(out) <- 1
   out
@@ -508,7 +507,7 @@ duplication_sequence <- function(K) {
 #' where `M` is a symmetric matrix. See [vec()] and [vech()] and the example
 #' below.
 #'
-#' @inheritParams selector
+#' @inheritParams selector_J
 #'
 #' @return * `duplication_matrix` \cr A `(K^2 x [K^2 + K]/2)` selection matrix
 #'   containing ones and zeros.

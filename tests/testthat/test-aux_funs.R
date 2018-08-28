@@ -149,7 +149,7 @@ test_that("Converting to VAR(1) companion form works", {
   cf_U2 <- cf$Y - cf$A %*% cf$Z
 
   expect_equal(cf_U, cf_U2)
-  expect_equal(U, selector(K, p) %*% cf_U2)
+  expect_equal(U, selector_J(K, p) %*% cf_U2)
   expect_equal(cf$nu, matrix(c(1:K, rep(0, K)), nrow = K * p))
 
   # vector input fails
@@ -219,6 +219,12 @@ test_that("Companion format is converted to original format", {
   expect_equal(expander_e(K, K)[1, 1], 1)
   expect_equal(unique(expander_e(K, K)[-1]), 0)
   expect_error(expander_e(K, K + 1))
+
+  p <- 2
+
+  expect_is(selector_J(1, 1), "matrix")
+  expect_equal(selector_J(K, p)[, 1:K], diag(K))
+  expect_equal(unique(c(selector_J(K, p)[, -(1:K)])), 0)
 })
 
 test_that("vech(M) is duplicated to vec(M)", {
