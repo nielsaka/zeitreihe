@@ -122,7 +122,7 @@ mean_var_process <- function(A, nu) {
 #' cov_var_process(A, SIGMA)
 #' cov_var_process(A, SIGMA, h = 5)
 #' cov_var_process(A, SIGMA, h = 150)
-# TODO better formula? frequency domain? in what ways "better"?
+# TODO-9 better formula? frequency domain? in what ways "better"?
 cov_var_process <- function(A, SIGMA, h = 0, tol = 1E-7) {
   stopifnot(check_stability(A))
   K <- var_length(A)
@@ -599,11 +599,6 @@ check_start <- function(x, start) {
 check_start_all <- function(x, start) {
   all_true(check_start(x, start))
 }
-# TODO document, test(?)
-# TODO memoise? another package dependency...
-seq_mu <- function(K) if (K > 0) 1:K else stop("K is not positive")
-seq_a  <- function(K, p) length(seq_mu(K)) + 1:(K^2 * p)
-seq_s  <- function(K, p) length(c(seq_mu(K), seq_a(K, p))) + 1:(K^2 + K) / 2
 ###############################################################################.
 #' Sample Splitting
 #'
@@ -666,10 +661,6 @@ split_templ <- function(
 
     K <- var_length(Y)
     slice <- function(from, to) matrix(Y[, from + seq_len(to)], nrow = K)
-    # TODO alternatively, return two elements, both lists: 'real', 'simulation'
-    # where burn_in and out_of_sample belong to the 'simulation' part and the
-    # rest to 'real'? any additional value?
-    # TODO keep names of 'Nxxx' and 'xxx' identical?
     list(
       burn_in       = slice(0, Nburn),
       pre_sample    = slice(Nburn, Npre),
