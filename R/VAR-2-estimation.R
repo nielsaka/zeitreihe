@@ -257,6 +257,81 @@ FEVD <- function(THETA) {
   out.long
 }
 ###############################################################################.
+#' Gradient of VAR reduced-form log-likelihood
+#'
+#'
+#'
+#' @example
+#'set.seed(8191)
+#'
+#'N <- 1E4
+#'K <- 1
+#'p <- 1
+#'
+#' A  <- matrix(0.1, K, K * p); diag(A) <- 0.4
+#' Y0 <- matrix(0, K, p)
+#' U <- matrix(rnorm(N * K), K, N)
+#'
+#' Y <- create_varp_data(A = A, Y0 = Y0, U = U)
+#'
+#' gradient <- gradient_var_init(Y, p)
+#'
+#' args <- c(mu = rep(0, K), a = vec(A), s = vech(diag(K)))
+#' gradient(args)
+#'
+#' ols_fit <- ols_mv(Y, p, const = TRUE)
+#'
+#' ols_args <- c(mu = ols_fit$BETA.hat[, 1],
+#'           a = ols_fit$BETA.hat[, -1],
+#'           s = c(vech(ols_fit$SIGMA.hat)) * (N - 1 - K * p) / N)
+#' gradient(ols_args)
+gradient_var_init <-function(Y, p) {
+  K <- var_length(Y)
+  Z <- Y2Z(Y, p, const = FALSE)
+  Y <- Y[, -seq_len(p)] # TODO return from Y2Z ?? sample_templ !!
+  N <- obs_length(Z)
+
+  function(args) {
+    # TODO-8 factor out common code here and in log-likelihood below
+    # seq_mu, seq_a, seq_s? check out git history
+    stopifnot(!any(is.na(args)))
+    stopifnot(length(args) == 1.5 * K + (p + .5) * K^2)
+
+    # unconditional means
+    mu <- args[seq_len(K)]
+    stopifnot(check_start_all(mu, "mu"))
+
+    # slope parameters
+    a <- args[K + seq_len(K^2 * p)]
+    stopifnot(check_start_all(a, "a"))
+    A  <- matrix(a, K, K * p)
+    # TODO-2 may not be random walks! otherwise problem in derivative of mu below!!
+
+    # residual covariances
+    s <- args[K + K^2 * p + seq_len((K^2 + K)/2)]
+    stopifnot(check_start_all(s, "s"))
+    SIGMA <- matrix(duplication_matrix(K) %*% s, K, K)
+
+    icol <- function(n) matrix(1, n, 1)
+
+    # de-mean Y ...
+    X <- Z - rep(mu, p)
+    Ydm <- Y - mu
+
+    # kronecker does not take precedence before usual (dot?) product
+
+    ident_K <- diag(K)
+    Si  <- chol2inv(chol(SIGMA)) # TODO use chol2inv(chol(...)) instead of solve in other places with symmetric matrices
+    U <- Ydm - A %*% X
+
+    gr_mu <- t(ident_K - A %*% (icol(p) %x% ident_K)) %*% Si %*% U %*% icol(N)
+    gr_a  <- (X %x% Si) %*% vec(Ydm) - (tcrossprod(X) %x% Si) %*% a
+    gr_s  <- vech(-N/2 * Si + 1/2 * Si %*% tcrossprod(U) %*% Si)
+
+    -c(mu = gr_mu, a = gr_a, s = gr_s)
+  }
+}
+###############################################################################.
 #' Maximum likelihood estimation of a VAR(p)
 #'
 #'
@@ -295,7 +370,8 @@ FEVD <- function(THETA) {
 #' mle_fit$std.err
 #' ols_fit$std.err
 # TODO work out gradient and feed to optim? faster? not central right now
-mle_var <- function(Y, p, init, log_lik = log_lik_init(Y, p)) {
+mle_var <- function(Y, p, init, log_lik = log_lik_init(Y, p),
+                    gradient) {
   K <- var_length(Y)
 
   # start values
@@ -315,10 +391,19 @@ mle_var <- function(Y, p, init, log_lik = log_lik_init(Y, p)) {
 
   neg_log_lik <- function(args) -1 * log_lik(args)
 
+  if (missing(gradient)) {
+    # TODO-4 should pass neg_log_lik explicitly?
+    # TODO-7 numDeriv better than optim internal gradient? performance?
+    gradient <-function(x) numDeriv::grad(neg_log_lik, x)
+  }
+
   mle_fit <- optim(
     args, neg_log_lik,
+    gr = gradient,
     method = "L-BFGS-B", lower = lower, hessian = TRUE
   )
+
+  # TODO-2 check message of optim! grep(mle_fit$message, "ERROR") ??
 
   get_elem <- function(x, start) x[check_start(x, start)]
   get_elem_par <- function(st) get_elem(mle_fit$par, st)
