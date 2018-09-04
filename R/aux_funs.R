@@ -425,7 +425,7 @@ vech <- function(mat) {
 ###############################################################################.
 #' Vectorise a matrix
 #'
-#' Vectorise a matrix by stacking its elements in a vector.
+#' Vectorise a matrix by stacking its columns in a vector.
 #'
 #' @param mat An `(M x N)` matrix with arbitrary dimensions `M` and `N`.
 #'

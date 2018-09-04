@@ -141,7 +141,7 @@ sMA_coeffs <- function(PHI, B) {
 #'   + `U.hat` is a `(K x N)` matrix of residuals. Its rows are named after the
 #'   variables, too.
 #'   + `std.err` is a matrix of the same dimension and naming scheme as
-#'    `BETA.hat`. It has the standard errors of the coefficient estimates.
+#'    `BETA.hat`. It carries the standard errors of the coefficient estimates.
 #'
 #'
 #' @export
