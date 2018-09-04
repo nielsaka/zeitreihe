@@ -419,7 +419,8 @@ obs_length <- function(mat) {
 #' mat[upper.tri(mat)] <- t(mat)[upper.tri(mat)]
 #' vech(mat)
 vech <- function(mat) {
-  stopifnot(all(mat == t(mat)))
+  # not identical because of numerical inaccuracies; floating point?
+  stopifnot(all.equal(mat, t(mat)))
   as.matrix(mat[lower.tri(mat, diag = TRUE)])
 }
 ###############################################################################.

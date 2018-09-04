@@ -158,7 +158,7 @@ ols_mv <- function(Y, p, const = TRUE) {
   } else {
     Z <- rep(cc, N)
   }
-  Y <- Y[, -seq_len(p)]
+  Y <- Y[, -seq_len(p), drop = FALSE]
   rownames(Z) <- znames
   rownames(Y) <- ynames
   ZZ.inv <- invSPD(Z %*% t(Z))
@@ -302,7 +302,7 @@ mle_var <- function(Y, p, init, log_lik = log_lik_init(Y, p)) {
   if (missing(init)) {
     # standard
     mu <- rep(0, K)
-    a  <- c(rep(c(1, rep(0, K)), K)[seq_len(K^2)], rep(0, K^2 * (p - 1)))
+    a  <- c(rep(c(0.9, rep(0, K)), K)[seq_len(K^2)], rep(0, K^2 * (p - 1)))
     s  <- vech(diag(K))
   } else {
     mu <- init$mu
