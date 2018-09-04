@@ -103,5 +103,89 @@ test_that("Simple ML estimaton of VAR succeeds", {
   # fails with too many parameters
   args <- c(mu = init_mu, a = init_A, s = c(vech(init_SIGMA), 1))
   expect_error(log_lik(args), "length(args) == 1.5 * K + (p + 0.5) ", f = TRUE)
+
+  #-----------
+  # MLE vs OLS
+  #-----------
+
+  ols_fit <- ols_mv(Y = Y, p = p, const = TRUE)
+  mle_fit <- mle_var(Y, p)
+
+  expect_known_output(mle_fit, "mle_fit.txt", print = TRUE)
+
+  mle_gradient_optim <- mle_var(Y, p, gradient = NULL)
+  mle_gradient_analytic <- mle_var(Y, p, gradient = gradient_var_init(Y, p))
+
+  # best solution? all correct? fastest?
+  expect_equal(mle_fit, mle_gradient_optim)
+  expect_equal(mle_gradient_optim, mle_gradient_analytic)
+
+  # TODO-2 constants do not match
+  expect_equivalent(mle_fit$BETA.hat, ols_fit$BETA.hat, tol = 2E-5)
+  expect_equivalent(mle_fit$SIGMA.hat, ols_fit$SIGMA.hat * (N - K*p - 1) / N,
+                    tol = 3E-5)
+  expect_equivalent(mle_fit$std.err, ols_fit$std.err) # can do anything about it?
 })
 
+test_that("gradient is computed correctly", {
+  set.seed(8191)
+
+  N <- 1E4
+  K <- 1
+  p <- 1
+
+  A  <- matrix(0.1, K, K * p); diag(A) <- 0.4
+  Y0 <- matrix(0, K, p)
+  U <- matrix(rnorm(N * K), K, N)
+
+  Y <- create_varp_data(A = A, Y0 = Y0, U = U)
+
+  gradient <- gradient_var_init(Y, p)
+
+  args <- c(mu = rep(0, K), a = vec(A), s = vech(diag(K)))
+  expect_known_output(gradient(args), "gradient.txt", print = TRUE)
+
+  ols_fit <- ols_mv(Y, p, const = TRUE)
+  ols_args <- c(mu = ols_fit$BETA.hat[, 1],
+                a = ols_fit$BETA.hat[, -1],
+                s = c(vech(ols_fit$SIGMA.hat)) * (N - 1 - K * p) / N)
+
+  mle_fit <- mle_var(Y, p)
+  mle_args <- c(mu = mle_fit$BETA.hat[, 1],
+                a = mle_fit$BETA.hat[, -1],
+                s = c(vech(mle_fit$SIGMA.hat)))
+
+  # TODO: intercept fairly different
+  expect_equal(mle_args, ols_args, tol = 1E-5)
+  expect_equal(gradient(mle_args), gradient(ols_args), tol = 5E-2)
+
+  ll <- log_lik_init(Y, p)
+
+  # TODO-2 add numDeriv to SuggestedPackages
+  expect_equivalent(numDeriv::grad(ll, args), gradient(args), tol = 1E-6)
+  expect_equivalent(numDeriv::grad(ll, ols_args), gradient(ols_args), tol = 1E-5)
+  expect_equivalent(numDeriv::grad(ll, mle_args), gradient(mle_args), tol = 1E-5)
+})
+
+# TODO-6 comparison of estimators -> simulation with N = 1000 ..
+# * ar.ols, ar.mle, ols_mv, mle_var, maxLik, vars, lm
+if (FALSE) {
+  # TODO-5 check
+  # https://stats.stackexchange.com/questions/148722/estimation-with-mle-and-returning-the-score-gradient-qmle
+  # https://www.stat.umn.edu/geyer/5931/mle/mle.pdf
+  # https://www.mn.uio.no/math/tjenester/kunnskap/kompendier/num_opti_likelihoods.pdf
+  ar_ols <- ar(c(Y),  aic = FALSE, order.max = p, method = "ols")
+  ar_mle <- ar(c(Y),  aic = FALSE, order.max = p, method = "mle", demean = TRUE)
+
+  ar_ols$ar
+  ar_ols$x.intercept
+  lm(Y[, -1] ~ Y[, -N])$coeff
+
+  ols_fit$BETA.hat
+
+  ar_mle$ar # closer comparison to arima0 ??
+  mle_fit$BETA.hat
+
+  ols_args
+  mle_args
+}
