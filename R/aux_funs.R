@@ -60,8 +60,7 @@ check_stability <- function(A) {
 #' Compute the mean of a VAR(p) process
 #'
 #' @inheritParams creat_varp_data
-#' @param nu A `(K x 1)` matrix or vector. The intercept parameters of the
-#'   process.
+#' @inheritParams big_nu
 #'
 #' @return A `(K x 1)` matrix containing the unconditional mean of each
 #'   variable.
@@ -281,11 +280,8 @@ big_Y <- function(Y, p) {
 #'
 #' big_nu(nu, p)
 big_nu <- function(nu, p) {
+  stopifnot(is.matrix(nu) && ncol(nu) == 1)
   expander_e(p) %x% nu
-
-  # more efficient? but also more verbose
-  # K <- var_length(nu)
-  # rbind(nu, matrix(0, K * (p - 1), 1))
 }
 ###############################################################################.
 #' @rdname companion_format

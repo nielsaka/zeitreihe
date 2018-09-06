@@ -50,11 +50,11 @@ test_that("Stability criterion is check", {
 
 test_that("Computing unconditional mean works", {
    A <- matrix(c(.5, .4, .1, .5, 0, .25, 0, 0), nrow = 2)
-   nu <- c(2, 3)
+   nu <- as.matrix(2:3)
    expect_equal(mean_var_process(A, nu), matrix(c(7.027027, 15.135135), 2, 1))
 
    A <- matrix(c(1, 0, 0, 1), nrow = 2)
-   nu <- c(2, 3)
+   nu <- as.matrix(2:3)
    expect_error(mean_var_process(A, nu), "check_stability(A) is not", f = TRUE)
 })
 
