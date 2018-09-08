@@ -527,6 +527,26 @@ duplication_matrix <- function(K) {
   res
 }
 ###############################################################################.
+#' Title
+#'
+#' @param r
+#' @param c
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' r <- 3
+#' c <- 2
+#'
+#' A <- matrix(rnorm(r * c), r, c)
+#'
+#' K <- commutation_matrix(r, c)
+#' all(K %*% vec(A) == vec(t(A)))
+commutation_matrix <- function(r, c) {
+  diag(r * c)[order(rep(seq_len(r), times = c)), ]
+}
+###############################################################################.
 #' Are all elements TRUE?
 #'
 #' Check whether all elements of a vector, matrix or array are TRUE.
