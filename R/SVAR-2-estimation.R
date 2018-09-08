@@ -206,3 +206,42 @@ if (FALSE) {
 # without overidentifying restrictions, log diff of determinants is at 5E-6. This
 # will lead to lr test statistis of N * 5E-6, so at N = 1E6 it is 5 !!
 # is this due to numerical inprecision??
+###############################################################################
+#' Title
+#'
+#' @param A
+#' @param B
+#' @param RA
+#' @param RB
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+#' K <- 2
+#'
+#' B <- matrix(c(1, 0, 0, 1), K, K)
+#' RB <-matrix(c(1, rep(0, 6), 1), K^2, K)
+#'
+#' asy_cov_mat_struc_coeff(B = B, RB = RB)
+#'
+asy_cov_mat_struc_coeff <- function(A, B, RA, RB) {
+
+  # just B
+  if (missing(A)) {
+    K <- var_length(B)
+
+    breadslice <- diag(K) %x% solve(B)
+    Kmat <- commutation_matrix(K, K)
+    I <- t(RB) %*% t(breadslice) %*% (diag(K^2) + Kmat) %*% breadslice %*% RB
+
+    return(solve(I))
+  }
+
+  ## TODO-7 just A
+  if (missing(B)) stop()
+
+  ## TODO-7 A and B
+  stop()
+}
