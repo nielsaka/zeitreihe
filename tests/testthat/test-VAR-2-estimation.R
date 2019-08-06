@@ -117,8 +117,8 @@ test_that("Simple ML estimaton of VAR succeeds", {
   mle_gradient_analytic <- mle_var(Y, p, gradient = gradient_var_init(Y, p))
 
   # best solution? all correct? fastest?
-  expect_equal(mle_fit, mle_gradient_optim)
-  expect_equal(mle_gradient_optim, mle_gradient_analytic)
+  expect_equal(mle_fit, mle_gradient_optim, tolerance = 1E-6)
+  expect_equal(mle_gradient_optim, mle_gradient_analytic, tolerance = 1E-4)
 
   # TODO-2 constants do not match
   expect_equivalent(mle_fit$BETA.hat, ols_fit$BETA.hat, tol = 2E-5)

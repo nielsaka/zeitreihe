@@ -412,6 +412,7 @@ mle_var <- function(Y, p, init, log_lik = log_lik_init(Y, p),
   a <- get_elem_par("a")
   s <- get_elem_par("s")
 
+  MU IS NOT NU !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   BETA.hat <- matrix(c(mu, a), K, K * p + 1)
   SIGMA.hat <- matrix(duplication_matrix(K) %*% s, K, K)
   U.hat <- Y[, -(1:p)] - mu - BETA.hat %*% Y2Z(Y, p)
