@@ -98,7 +98,7 @@ conc_log_lik_init <- function(Y, p, By, Be) {
   # TODO take into account whether constant was computed;
   # should not be a fixed "1" below.
   # return function that accepts as params elements of By and Be
-  SIGMA_hat <- ols_fit$SIGMA.hat # * (N - K * p - 1) / N
+  SIGMA_hat <- ols_fit$SIGMA.hat * (N - K * p - 1) / N
 
   constant <- - K * N * log(2 * pi)
 
