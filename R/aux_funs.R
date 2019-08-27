@@ -409,14 +409,13 @@ obs_length <- function(mat) {
 #' @param mat An `(M x M)` matrix with arbitrary dimensions `M`.
 #'
 #' @return A column matrix of dimension `(M^2 + M)/2 x 1`.
-#'
+#' @export
 #' @examples
 #' mat <- matrix(1:8, 4, 4)
 #' mat[upper.tri(mat)] <- t(mat)[upper.tri(mat)]
 #' vech(mat)
 vech <- function(mat) {
-  # not identical because of numerical inaccuracies; floating point?
-  stopifnot(all.equal(mat, t(mat)))
+  stopifnot(isSymmetric(mat, tol = 1E-10))
   as.matrix(mat[lower.tri(mat, diag = TRUE)])
 }
 ###############################################################################.
@@ -427,10 +426,11 @@ vech <- function(mat) {
 #' @param mat An `(M x N)` matrix with arbitrary dimensions `M` and `N`.
 #'
 #' @return A column matrix of dimension `NM x 1`.
-#'
+#' @export
 #' @examples
 #' mat <- matrix(1:15, 3, 5)
 #' vec(mat)
+#' all.equal(mat, matrix(vec(man), 3, 5))
 vec <- function(mat) {
   as.matrix(c(mat))
 }
@@ -467,17 +467,18 @@ expander_e <- function(r, c = 1) {
   mat
 }
 ###############################################################################.
-#' @details * `duplication_sequence` \cr is a helper function for
-#'   `duplication_matrix`.
+#' Column indices of duplication matrix
 #'
-#' @examples
+#' Create a vector containing the column indices of a duplication matrix. It's
+#' assumed the output will be matched with a row index running from 1, 2, ...
+#' onwards. It's helpful for creating a duplication matrix for a base matrix of
+#' dimension K x K.
 #'
-#' K <- 3
+#' @inheritParams duplication_matrix
 #'
-#' zeitreihe:::duplication_sequence(K)
-#'
-#' @rdname duplication_matrix
-duplication_sequence <- function(K) {
+#' @return An integer vector of length K^2.
+#' @details `dm_col_index` is a helper function for [`duplication_matrix`].
+dm_col_index <- function(K) {
   stopifnot(K %% 1 == 0)
   indx <- numeric(K^2)
   l <- i <- 1
@@ -496,34 +497,62 @@ duplication_sequence <- function(K) {
   }
   indx
 }
+### another version, more intuitive but slower
+dm_col_index_2 <- function(K) {
+
+  AA <- AA_sym <- matrix(seq_len(K^2), K, K)
+  AA_sym[upper.tri(AA_sym)] <- t(AA)[upper.tri(AA_sym)]
+
+  vec_AA_sym <- vec(AA_sym)
+  vech_AA_sym <- vech(AA_sym)
+
+  indx <- numeric(K^2)
+  for (i in seq_len(K^2)) {
+    indx[i] <- which(vec_AA_sym[i] == vech_AA_sym)
+  }
+  indx
+}
 ###############################################################################.
-#' Create a Duplication Matrix `D`
+#' Indices of a duplication matrix
 #'
-#' Create a duplication matrix for duplicating entries in a vector. This is
-#' particularly helpful for converting a vector `vech(M)` to a vector `vec(M)`,
+#' Create a matrix containing row and column indices of a duplication matrix.
+#' These indices specify where the duplication matrix carries ones.
+#'
+#' It is a helper function for [`duplication_matrix`].
+#'
+#' @inheritParams duplication_matrix
+#'
+#' @return An integer matrix of dimension 2 x K^2.  The first columns
+#'   corresponds to the row index, the second column to the column index.
+dm_index <- function(K) {
+  cbind(seq_len(K^2), dm_col_index(K))
+}
+###############################################################################.
+#' Duplication Matrix `D`
+#'
+#' Create a duplication matrix for duplicating entries of a vector. This is
+#' particularly useful for converting a vector `vech(M)` to a vector `vec(M)`,
 #' where `M` is a symmetric matrix. See [vec()] and [vech()] and the example
 #' below.
 #'
 #' @inheritParams selector_J
 #'
-#' @return * `duplication_matrix` \cr A `(K^2 x [K^2 + K]/2)` selection matrix
-#'   containing ones and zeros.
+#' @return A `(K^2 x [K^2 + K]/2)` selection matrix containing ones and zeros.
+#'   When multiplied with a vector, it will select entries of that vector to be
+#'   duplicated.
 #'
 #' @examples
+#' K <- 6
+#'
 #' AA <- matrix(1:K^2, K, K)
 #' AA[upper.tri(AA)] <- t(AA)[upper.tri(AA)]
 #'
-#' AA_vech <- zeitreihe:::vech(AA)
-#' AA_vec  <- zeitreihe:::duplication_matrix(K) %*% AA_vech
+#' AA
 #'
-#' AA_vech
-#' AA_vec
-#'
-#' all(zeitreihe:::vec(AA) == AA_vec)
-#' all.equal(AA, matrix(AA_vec, K, K))
+#' all(vec(AA) == duplication_matrix(K) %*% vech(AA))
 duplication_matrix <- function(K) {
   res <- matrix(0, K*K, K*(K+1)/2)
-  res[cbind(seq_len(K^2), duplication_sequence(K))] <- 1
+  res[dm_index(K)] <- 1
   res
 }
 ###############################################################################.

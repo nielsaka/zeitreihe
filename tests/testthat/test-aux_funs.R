@@ -228,23 +228,8 @@ test_that("Companion format is converted to original format", {
 })
 
 test_that("vech(M) is duplicated to vec(M)", {
-  for (K in c(1, 5)) {
-    # this is more untuitive but slower version of duplication_sequence()
-    dupl_seq_2 <- function(K) {
-      AA <- AA_sym <- matrix(seq_len(K^2), K, K)
-      AA_sym[upper.tri(AA_sym)] <- t(AA)[upper.tri(AA_sym)]
-
-      vec_AA_sym <- vec(AA_sym)
-      vech_AA_sym <- vech(AA_sym)
-
-      indx <- numeric(K^2)
-      for (i in seq_len(K^2)) {
-        indx[i] <- which(vec_AA_sym[i] == vech_AA_sym)
-      }
-      indx
-    }
-
-    expect_identical(duplication_sequence(K), dupl_seq_2(K))
+  for (K in c(1, 10)) {
+    expect_identical(dm_col_index(K), dm_col_index_2(K))
 
     AA <- matrix(1:K^2, K, K)
     AA[upper.tri(AA)] <- t(AA)[upper.tri(AA)]
