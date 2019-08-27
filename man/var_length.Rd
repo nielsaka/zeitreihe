@@ -24,4 +24,9 @@ At the moment, this function is just an aptly / intentionally named wrapper of
 p <- 3
 K <- 4
 var_length(matrix(0, K, K * p)) == K
+
+\dontrun{
+
+var_length(1:K)
+}
 }

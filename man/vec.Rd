@@ -13,9 +13,10 @@ vec(mat)
 A column matrix of dimension \code{NM x 1}.
 }
 \description{
-Vectorise a matrix by stacking its elements in a vector.
+Vectorise a matrix by stacking its columns in a vector.
 }
 \examples{
 mat <- matrix(1:15, 3, 5)
 vec(mat)
+all.equal(mat, matrix(vec(man), 3, 5))
 }

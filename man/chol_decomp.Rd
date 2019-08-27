@@ -12,7 +12,7 @@ thrown.}
 }
 \value{
 A matrix, the 'square root' of matrix \code{A}, as in \eqn{A =
-  LL^{T}}{A = LL'}. IS IT L or L'?
+  LL^{T}}{A = LL'}. TODO IS IT L or L'?
 }
 \description{
 Cholesky decomposition of a positive-definite matrix using the

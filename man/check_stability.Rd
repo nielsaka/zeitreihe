@@ -17,8 +17,8 @@ Boolean scalar. \code{TRUE} if the criterion is satisfied, otherwise
 }
 \description{
 This function will check whether the process implied by the coefficient
-matrix \code{A} is stable. That is, whether its eigenvalues are all smaller than
-one in absolute terms.
+matrix \code{A} is stable. That is, whether the eigenvalues of the associated
+companion format are all smaller than one in absolute terms.
 }
 \examples{
 A <- matrix(c(.5, .4, .1, .5, 0, .25, 0, 0), nrow = 2)

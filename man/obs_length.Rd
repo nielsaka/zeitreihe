@@ -26,4 +26,9 @@ K <- 4
 N <- 1E3
 
 obs_length(matrix(0, K, N)) == N
+
+\dontrun{
+
+obs_length(1:K)
+}
 }

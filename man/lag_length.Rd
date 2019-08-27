@@ -31,5 +31,6 @@ lag_length(A) == p
 
 A <- matrix(0, 4, 7)
 lag_length(A)
+lag_length(A[1, ])
 }
 }

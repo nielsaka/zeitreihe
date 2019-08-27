@@ -7,8 +7,11 @@
 mean_var_process(A, nu)
 }
 \arguments{
-\item{nu}{A \code{(K x 1)} matrix or vector. The intercept parameters of the
-process.}
+\item{A}{A \code{(K x Kp)} matrix, providing the coeffcients for lag \code{1} to \code{p}
+with the first row containing the coefficents of the first equation.
+Parameter \code{p} is the maximum lag length and \code{K} the number of variables.}
+
+\item{nu}{A \code{(K x 1)} matrix of intercepts.}
 }
 \value{
 A \code{(K x 1)} matrix containing the unconditional mean of each

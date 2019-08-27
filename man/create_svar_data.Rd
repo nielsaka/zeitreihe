@@ -21,9 +21,9 @@ first column corresponds to the very first time period.}
 vectors.}
 }
 \value{
-A \code{(K x (N + p))} matrix holding the observations. The first \code{p}
+A \code{(K x N+p)} matrix holding the observations. The first \code{p}
 columns will be equal to \code{Y0}. Column \code{p + 1} will be equal to \code{A \\\\\%*\\\\\% Y0 + U[, 1]}, where \code{U} contains reduced form errors. The final observation
-of the \code{K} variables will be in column \code{N}.
+of the \code{K} variables will be in column \code{N+p}.
 }
 \description{
 Given some starting values, coefficients, a sequence of \emph{structural} error

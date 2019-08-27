@@ -7,10 +7,10 @@
 log_lik_init(Y, p)
 }
 \arguments{
-\item{Y}{A \code{(K x N)} matrix carrying the data for estimation. There are
-\code{N} observations for each of the \code{K} variables.}
+\item{Y}{A \code{(K x N+p)} matrix carrying the data for estimation. There are
+\code{N} observations for each of the \code{K} variables with \code{p} pre-sample values.}
 
-\item{p}{An integer scalar, the lag length used for estimation.}
+\item{p}{An integer scalar. The lag length of the VAR(p) system.}
 }
 \value{
 A function is returned. It takes as input a named vector \code{args}. This

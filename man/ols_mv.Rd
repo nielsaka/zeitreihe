@@ -7,10 +7,10 @@
 ols_mv(Y, p, const = TRUE)
 }
 \arguments{
-\item{Y}{A \code{(K x N)} matrix carrying the data for estimation. There are
-\code{N} observations for each of the \code{K} variables.}
+\item{Y}{A \code{(K x N+p)} matrix carrying the data for estimation. There are
+\code{N} observations for each of the \code{K} variables with \code{p} pre-sample values.}
 
-\item{p}{An integer scalar, the lag length used for estimation.}
+\item{p}{An integer scalar. The lag length of the VAR(p) system.}
 
 \item{const}{A boolean scalar, indicating wether a constant should be
 included. Defaults to \code{TRUE}.}
@@ -31,7 +31,7 @@ residuals. The columns and rows are named after the variables in \code{Y}.
 \item \code{U.hat} is a \code{(K x N)} matrix of residuals. Its rows are named after the
 variables, too.
 \item \code{std.err} is a matrix of the same dimension and naming scheme as
-\code{BETA.hat}. It has the standard errors of the coefficient estimates.
+\code{BETA.hat}. It carries the standard errors of the coefficient estimates.
 }
 }
 \description{

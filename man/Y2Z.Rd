@@ -7,21 +7,21 @@
 Y2Z(Y, p, const = TRUE)
 }
 \arguments{
-\item{Y}{A \code{(K x N)} matrix carrying the data for estimation. There are
-\code{N} observations for each of the \code{K} variables.}
+\item{Y}{A \code{(K x N+p)} matrix carrying the data for estimation. There are
+\code{N} observations for each of the \code{K} variables with \code{p} pre-sample values.}
 
-\item{p}{An integer scalar, the lag length used for estimation.}
+\item{p}{An integer scalar. The lag length of the VAR(p) system.}
 
 \item{const}{A boolean scalar, indicating wether a constant should be
 included. Defaults to \code{TRUE}.}
 }
 \value{
-A \code{([K * p + 1] x [N - p])} or \code{([K * p] x [N - p])}matrix. The
+A \code{([K * p + 1] x N)} or \code{([K * p] x N)}matrix. The
 dimension depends on whether a constant is included. If it is included, the
 first row consists of ones. The next K rows will contain the data lagged by
 one time period. The remaining rows will contain further lags up to order p.
-The columns will contain time periods of which there are now \code{N - p} left
-after setting aside pre-sample values for the lags.
+The columns will contain time periods of which there are now \code{N} left
+after setting aside \code{p} pre-sample values for as lags.
 }
 \description{
 Matrix \code{Y} is transformed into \code{Z} notation; see Lütkepohl (2005, p. 70).
