@@ -4,7 +4,7 @@
 \alias{create_varp_data}
 \title{Create data using a reduced-form VAR}
 \usage{
-create_varp_data(A, Y0, U)
+create_varp_data(A, Y0, U, nu = 0)
 }
 \arguments{
 \item{A}{A \code{(K x Kp)} matrix, providing the coeffcients for lag \code{1} to \code{p}
@@ -15,6 +15,9 @@ Parameter \code{p} is the maximum lag length and \code{K} the number of variable
 first column corresponds to the very first time period.}
 
 \item{U}{A \code{(K x N)} matrix, providing the sequence of error vectors.}
+
+\item{nu}{A \code{(K x 1)} vector with the intercept for each equation. The
+default is zero.}
 }
 \value{
 A \code{(K x N+p)} matrix holding the observations. The first \code{p}

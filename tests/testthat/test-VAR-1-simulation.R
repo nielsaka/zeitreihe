@@ -1,6 +1,5 @@
 context("Testing VAR data creation")
 
-
 test_that("Simulating AR(p) works", {
   #############################################################################.
   # basic test
@@ -13,6 +12,14 @@ test_that("Simulating AR(p) works", {
 
   ee <- c(rnorm(100), rep(0, 1000))
   expect_equal(tail(create_arp_data(a, y_0, ee), 100), rep(0, 100))
+
+  #############################################################################.
+  # is it equivalent to VAR(1) with K = 1?
+  expect_equivalent(
+    create_arp_data(a, y_0, ee),
+    create_varp_data(A = t(a), Y0 = t(y_0), U = t(ee)),
+    tol = 1E-20
+  )
 })
 
 test_that("Simulating VAR(1) works", {
@@ -42,17 +49,8 @@ test_that("Simulating VAR(1) works", {
     create_varp_data(A, Y_0, EE)[, n], # takes nearly 1000 obs !
     c(y1 = 0, y2 = 0, y3 = 0, y4 = 0, y5 = 0)
   )
-  #############################################################################.
-  # is it equivalent to VAR(p) ?
-  EE <- EE[, 1:10]
-
-  expect_identical(
-  tt <- create_varp_data(A, Y_0, EE),
-  # create_varp_data includes starting values in return
-  pp <- create_varp_data(A = A, Y0 = Y_0, U = EE)
-  )
-
 })
+
 test_that("Simulating Var(p) works", {
   set.seed(15)
   K <- 3
@@ -90,6 +88,19 @@ test_that("Simulating Var(p) works", {
     create_varp_data(B, Z_0, UU)[, n],
     c(y1 = 0, y2 = 0, y3 = 0)
   )
+
+  #############################################################################.
+  # check if adding intercept works
+  nu <- c(50, 100, 5)
+
+  mu <- c(solve(diag(K) - B1 - B2) %*% nu)
+  names(mu) <- c("y1", "y2", "y3")
+
+  # let it converge as above to long-term mean mu
+  YY <- create_varp_data(B, Z_0, UU, nu = nu)
+
+  expect_equal(YY[, n], mu, tol = 1E-10)
+
   #############################################################################.
   # check error if Z_0 wrong
 

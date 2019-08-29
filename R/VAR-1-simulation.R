@@ -36,6 +36,8 @@ create_arp_data <- function(a, y0, e = rnorm(N), N = 100, intercept = FALSE) {
 #' @param Y0 A `(K x p)` matrix which will be used as starting values. The
 #'   first column corresponds to the very first time period.
 #' @param U  A `(K x N)` matrix, providing the sequence of error vectors.
+#' @param nu  A `(K x 1)` vector with the intercept for each equation. The
+#'   default is zero.
 #' @return A `(K x N+p)` matrix holding the observations. The first `p`
 #'   columns will be equal to `Y0`. Column `p + 1` will be equal to `A \\\%*\\\%
 #'   Y0 + U[, 1]`, where `U` contains reduced form errors. The final observation
@@ -45,20 +47,26 @@ create_arp_data <- function(a, y0, e = rnorm(N), N = 100, intercept = FALSE) {
 #' [this solution](http://gallery.rcpp.org/articles/simulating-vector-autoregressive-process/)
 #' by Dirk Eddelbuettel.
 #' @export
-create_varp_data <- function(A, Y0, U) {
-  # no intercept
-  K <- nrow(A)
-  p <- ncol(A) / K
+create_varp_data <- function(A, Y0, U, nu = 0) {
+
+  K  <- nrow(A)
+  p  <- ncol(A) / K
   Tt <- ncol(U)
 
-  YY <- matrix(, ncol = Tt + p, nrow = K)
+  YY <- matrix(ncol = Tt + p, nrow = K)
   rownames(YY) <- paste0("y", seq_len(K))
   Y0 <- as.matrix(Y0)
-  stopifnot(dim(Y0)[1] == K && dim(Y0)[2] == p)
+
+  stopifnot(
+    dim(Y0)[1] == K && dim(Y0)[2] == p,
+    length(nu) == K || identical(nu, 0)
+  )
+
   YY[, 1:p] <- Y0
+
   for (t in 1:Tt) {
     # Alternatively, just use companion form. Indexing is even simpler.
-    YY[, t + p] = A %*% as.vector(YY[, (t+p-1):t]) + U[, t]
+    YY[, t + p] = nu + A %*% as.vector(YY[, (t+p-1):t]) + U[, t]
   }
   return(YY)
 }
