@@ -2,9 +2,15 @@
 % Please edit documentation in R/aux_funs.R
 \name{mean_var_process}
 \alias{mean_var_process}
+\alias{nu2mu}
+\alias{mu2nu}
 \title{Compute the mean of a VAR(p) process}
 \usage{
 mean_var_process(A, nu)
+
+nu2mu(A, nu)
+
+mu2nu(A, mu)
 }
 \arguments{
 \item{A}{A \code{(K x Kp)} matrix, providing the coeffcients for lag \code{1} to \code{p}
@@ -12,18 +18,24 @@ with the first row containing the coefficents of the first equation.
 Parameter \code{p} is the maximum lag length and \code{K} the number of variables.}
 
 \item{nu}{A \code{(K x 1)} matrix of intercepts.}
+
+\item{mu}{A \code{(K x 1)} matrix of means.}
 }
 \value{
-A \code{(K x 1)} matrix containing the unconditional mean of each
-variable.
+A \code{(K x 1)} matrix containing either the unconditional mean or the
+intercept for each variable.
 }
 \description{
-Compute the mean of a VAR(p) process
+Convert the intercept of the VAR(p) process to the mean and vice versa.
+}
+\details{
+\code{nu2mu(A, nu)} is an alias for \code{mean_var_process(A, nu)}.
 }
 \examples{
  A <- matrix(c(.5, .4, .1, .5, 0, .25, 0, 0), nrow = 2)
- nu <- c(2, 3)
- mean_var_process(A, nu)
+ nu <- as.matrix(c(2, 3))
+ nu2mu(A, nu)
+ mu2nu(A, nu2mu(A, nu))
 
 \dontrun{
 

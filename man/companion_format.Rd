@@ -126,6 +126,11 @@ big_Y(Y, p)
 
 big_nu(nu, p)
 
+\dontrun{
+
+big_nu(c(nu), p)
+}
+
 U <- matrix(seq_len(K * N), K, N)
 big_U(U, p)
 

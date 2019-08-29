@@ -48,10 +48,11 @@ test_that("Stability criterion is check", {
   expect_true(check_stability(A))
 })
 
-test_that("Computing unconditional mean works", {
-   A <- matrix(c(.5, .4, .1, .5, 0, .25, 0, 0), nrow = 2)
+test_that("Converting between mean and intercept works", {
+   A <- matrix(c(.5, .4, .1, .5, 0, .25, -0.3, 0), nrow = 2)
    nu <- as.matrix(2:3)
-   expect_equal(mean_var_process(A, nu), matrix(c(7.027027, 15.135135), 2, 1))
+   expect_equal(mean_var_process(A, nu), matrix(c(1.0526316, 7.368421), 2, 1))
+   expect_equal(mu2nu(A, nu2mu(A, nu)), nu, tol = 1E-15)
 
    A <- matrix(c(1, 0, 0, 1), nrow = 2)
    nu <- as.matrix(2:3)
@@ -155,6 +156,7 @@ test_that("Converting to VAR(1) companion form works", {
   # vector input fails
   expect_error(companion_format(Y[1, ], nu[1], A, U[1, ]))
   expect_error(companion_format(Y, nu, A, U[1, ]))
+  expect_error(big_nu(c(nu), p))
 
   # incompatible dimensions fail
   expect_error(companion_format(Y, nu, A, U[, -1]))

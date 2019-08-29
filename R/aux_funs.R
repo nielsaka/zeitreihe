@@ -59,16 +59,21 @@ check_stability <- function(A) {
 ###############################################################################.
 #' Compute the mean of a VAR(p) process
 #'
-#' @inheritParams creat_varp_data
-#' @inheritParams big_nu
+#' Convert the intercept of the VAR(p) process to the mean and vice versa.
 #'
-#' @return A `(K x 1)` matrix containing the unconditional mean of each
-#'   variable.
+#' `nu2mu(A, nu)` is an alias for `mean_var_process(A, nu)`.
+#'
+#' @inheritParams big_nu
+#' @inheritParams create_varp_data
+#'
+#' @return A `(K x 1)` matrix containing either the unconditional mean or the
+#'   intercept for each variable.
 #'
 #' @examples
 #'  A <- matrix(c(.5, .4, .1, .5, 0, .25, 0, 0), nrow = 2)
-#'  nu <- c(2, 3)
-#'  mean_var_process(A, nu)
+#'  nu <- as.matrix(c(2, 3))
+#'  nu2mu(A, nu)
+#'  mu2nu(A, nu2mu(A, nu))
 #'
 #' \dontrun{
 #'
@@ -86,6 +91,19 @@ mean_var_process <- function(A, nu) {
 
   selector_J(K, p) %*% solve(diag(K * p) - AA) %*% nunu
 }
+
+###############################################################################
+#' @rdname mean_var_process
+nu2mu <- mean_var_process
+###############################################################################.
+#' @param mu A `(K x 1)` matrix of means.
+#' @rdname mean_var_process
+mu2nu <- function(A, mu) {
+  K <- var_length(A)
+  P <- lag_length(A)
+  (diag(K) - A %*% (rep(1, P) %x% diag(K))) %*% mu
+}
+
 ###############################################################################.
 #' Compute the Covariance Matrix of a VAR(p) Process
 #'
@@ -279,6 +297,11 @@ big_Y <- function(Y, p) {
 #' @examples
 #'
 #' big_nu(nu, p)
+#'
+#' \dontrun{
+#'
+#' big_nu(c(nu), p)
+#' }
 big_nu <- function(nu, p) {
   stopifnot(is.matrix(nu) && ncol(nu) == 1)
   expander_e(p) %x% nu
