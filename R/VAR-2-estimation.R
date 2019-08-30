@@ -373,6 +373,7 @@ gradient_var_init <-function(Y, p) {
 mle_var <- function(Y, p, init, log_lik = log_lik_init(Y, p),
                     gradient) {
   K <- var_length(Y)
+  N <- obs_length(Y) - p
 
   # start values
   if (missing(init)) {
@@ -412,12 +413,15 @@ mle_var <- function(Y, p, init, log_lik = log_lik_init(Y, p),
   a <- get_elem_par("a")
   s <- get_elem_par("s")
 
-  MU IS NOT NU !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  BETA.hat <- matrix(c(mu, a), K, K * p + 1)
+  A <- matrix(a, K, K * p)
+  nu <- mu2nu(A, mu)
+  BETA.hat <- cbind(nu, A)
   SIGMA.hat <- matrix(duplication_matrix(K) %*% s, K, K)
-  U.hat <- Y[, -(1:p)] - mu - BETA.hat %*% Y2Z(Y, p)
+  U.hat <- Y[, -(1:p)] - matrix(nu, K, N) - BETA.hat %*% Y2Z(Y, p)
 
   # no need to switch sign since negative was minimised above.
+  #TODO: this is the variance of the mean, but NOT the intercept...
+  # FIX IT
   vari <- diag(solve(mle_fit$hessian))
   std.err <- matrix(
     sqrt(c(get_elem(vari, "mu"), get_elem(vari, "a"))),
