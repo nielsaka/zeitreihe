@@ -4,7 +4,7 @@ set.seed(8191)
 
 # number of variables, observations and lag length
 K <- 3
-N <- 1E6
+N <- 1E5
 p <- 2
 
 # prepare input
@@ -20,7 +20,7 @@ Y <- create_svar_data(A, Be, Y0, W)
 Be_hat_ols <- ols_cholesky(Y, p)
 
 test_that("Covariance matrix is decomposed via Cholesky", {
-  expect_equivalent(Be_hat_ols, Be, tol = 2E-3)
+  expect_equivalent(Be_hat_ols, Be, tol = 5E-3)
 })
 
 # set restrictions
@@ -30,7 +30,7 @@ Be_init[lower.tri(Be_init, diag = TRUE)] <- NA
 
 test_that("concentrated log-lik fn is initialised and evaluated", {
   log_lik <- conc_log_lik_init(Y, p, By_init, Be_init)
-  expect_equal(log_lik(rep(0.35, 6)), -14793189.4491467550396919)
+  expect_equal(log_lik(rep(0.35, 6)), -1485475.223167373)
 })
 
 # estimate with MLE
@@ -38,7 +38,7 @@ Be_hat_mle <- mle_svar(Y, p, By_init, Be_init)$Be
 
 test_that("concentrated log-lik of SVAR is maximised", {
   expect_known_output(print(Be_hat_mle, d = 16), "Be_hat_mle.txt")
-  expect_equivalent(Be_hat_mle, Be, tol = 2E-3)
+  expect_equivalent(Be_hat_mle, Be, tol = 5E-3)
   # TODO how precise should MLE be?? Can it be more precise? Gradient? Optimiser?
   expect_equivalent(Be_hat_mle, Be_hat_ols, tol = 1E-6)
 })
