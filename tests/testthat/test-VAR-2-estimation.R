@@ -37,12 +37,12 @@ test_that("Simple multivariate OLS succeeds", {
     c("y1", "y2", "y3")
   )
 
-  skip_if(save_time)
+  # skip_if(save_time)
 
   # test SIGMA.hat
 
   K <- 2
-  N <- 1E1
+  N <- 1E2
   p <- 2
   reps <- 2E3
 
@@ -50,19 +50,19 @@ test_that("Simple multivariate OLS succeeds", {
   input <- replicate(reps, prep_input_varp(K, N, p, seed = sample(1E5, 1)))
   Y <- lapply(seq_len(reps), function(x) do.call("create_varp_data", input[, x]))
 
-  out <- lapply(Y, ols_mv, p = p, const = FALSE)
+  out <- lapply(Y, ols_mv, p = p, const = TRUE)
   (SIGMA.hat <- rowMeans(sapply(out, function(x) x$SIGMA.hat)))
-  expect_equal(SIGMA.hat, c(1, 0, 0, 1), tol = 4E-2)
+  expect_equal(SIGMA.hat, c(1, 0, 0, 1), tol = 1E-3)
   # slight bias bc of auto-regression?
 
   out <- lapply(Y, ols_mv, p = p, const = TRUE)
   (SIGMA.hat <- rowMeans(sapply(out, function(x) x$SIGMA.hat)))
-  expect_equal(SIGMA.hat, c(1, 0, 0, 1), tol = 2E-2)
+  expect_equal(SIGMA.hat, c(1, 0, 0, 1), tol = 8E-2)
 
   # test BETA.hat
 
   K <- 2
-  N <- 2E5
+  N <- 1E5
   p <- 3
 
   Y <- do.call("create_varp_data", prep_input_varp(K, N, p))
@@ -129,7 +129,7 @@ test_that("Simple ML estimaton of VAR succeeds", {
 })
 
 test_that("gradient is computed correctly", {
-  set.seed(8191)
+  set.seed(8192)
 
   N <- 1E4
   K <- 1
@@ -159,10 +159,10 @@ test_that("gradient is computed correctly", {
   expect_equal(mle_args, ols_args, tol = 1E-5)
   expect_equal(gradient(mle_args), gradient(ols_args), tol = 5E-2)
 
-  ll <- log_lik_init(Y, p)
+  ll <- function(...) -1 * log_lik_init(Y, p)(...)
 
   # TODO-2 add numDeriv to SuggestedPackages
-  expect_equivalent(numDeriv::grad(ll, args), gradient(args), tol = 1E-6)
+  expect_equivalent(numDeriv::grad(ll, args), gradient(args), tol = 1E-8)
   expect_equivalent(numDeriv::grad(ll, ols_args), gradient(ols_args), tol = 1E-5)
   expect_equivalent(numDeriv::grad(ll, mle_args), gradient(mle_args), tol = 1E-5)
 })
