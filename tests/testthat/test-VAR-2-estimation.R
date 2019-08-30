@@ -1,4 +1,4 @@
-context("Estimation routines for reduced-form VAR")
+context("Testing VAR reduced-form estimation")
 
 test_that("Simple multivariate OLS succeeds", {
 
@@ -9,9 +9,7 @@ test_that("Simple multivariate OLS succeeds", {
   p <- 2
 
   Y <- do.call("create_varp_data", prep_input_varp(K, N, p))
-  expect_equal_to_reference(ols_mv(Y = Y, p), "ols_mv.rds")
-
-  # no constant
+  expect_known_value(ols_mv(Y = Y, p), "ols_mv.rds")
 
   K <- 3
   N <- 1E2
@@ -52,12 +50,10 @@ test_that("Simple multivariate OLS succeeds", {
 
   out <- lapply(Y, ols_mv, p = p, const = TRUE)
   (SIGMA.hat <- rowMeans(sapply(out, function(x) x$SIGMA.hat)))
-  expect_equal(SIGMA.hat, c(1, 0, 0, 1), tol = 1E-3)
-  # slight bias bc of auto-regression?
 
-  out <- lapply(Y, ols_mv, p = p, const = TRUE)
-  (SIGMA.hat <- rowMeans(sapply(out, function(x) x$SIGMA.hat)))
+  # slight bias bc of auto-regression?
   expect_equal(SIGMA.hat, c(1, 0, 0, 1), tol = 8E-2)
+
 
   # test BETA.hat
 
@@ -67,7 +63,8 @@ test_that("Simple multivariate OLS succeeds", {
 
   Y <- do.call("create_varp_data", prep_input_varp(K, N, p))
   out <- ols_mv(Y = Y, p)
-  expect_equivalent(out$BETA.hat[, -1], make_A(K, p), tol = 4E-3)
+  expect_equivalent(out$BETA.hat[, -1], make_A(K, p), tol = 1E-2)
+  expect_equivalent(out$BETA.hat[,  1], make_nu(K), tol = 5E-1)
 })
 
 test_that("Simple ML estimaton of VAR succeeds", {
@@ -84,7 +81,7 @@ test_that("Simple ML estimaton of VAR succeeds", {
   args <- c(mu = init_mu, a = init_A, s = vech(init_SIGMA))
   log_lik <- log_lik_init(Y, p)
 
-  expect_equal(log_lik(args), -2250.7876)
+  expect_equal(log_lik(args), -5934375.776099924)
 
   # fail without names
   args <- c(init_mu, a = init_A, s = vech(init_SIGMA))
@@ -120,7 +117,7 @@ test_that("Simple ML estimaton of VAR succeeds", {
   expect_equal(mle_fit, mle_gradient_optim, tolerance = 1E-6)
   expect_equal(mle_gradient_optim, mle_gradient_analytic, tolerance = 1E-4)
 
-  expect_equivalent(mle_fit$BETA.hat, ols_fit$BETA.hat, tol = 3E-5)
+  expect_equivalent(mle_fit$BETA.hat, ols_fit$BETA.hat, tol = 1E-4)
   expect_equivalent(mle_fit$SIGMA.hat, ols_fit$SIGMA.hat * (N - K*p - 1) / N,
                     tol = 7E-5)
   # TODO: standard error for intercept is wrong in mle_fit

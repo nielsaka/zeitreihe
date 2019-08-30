@@ -378,7 +378,7 @@ mle_var <- function(Y, p, init, log_lik = log_lik_init(Y, p),
   # start values
   if (missing(init)) {
     # standard
-    mu <- rep(0, K)
+    mu <- rowMeans(Y)
     a  <- c(rep(c(0.9, rep(0, K)), K)[seq_len(K^2)], rep(0, K^2 * (p - 1)))
     s  <- vech(diag(K))
   } else {
@@ -403,6 +403,7 @@ mle_var <- function(Y, p, init, log_lik = log_lik_init(Y, p),
     gr = gradient,
     method = "L-BFGS-B", lower = lower, hessian = TRUE
   )
+  if (mle_fit$convergence != 0) stop("mle_var: Optimisation did not converge.")
 
   # TODO-2 check message of optim! grep(mle_fit$message, "ERROR") ??
 
