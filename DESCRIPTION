@@ -8,6 +8,7 @@ Description:
   at completeness. Instead, the package is a byproduct of my work. Its contents 
   is driven by whatever I felt necessary to implement myself.
 Depends: R (>= 3.0.0)
+Imports: MASS
 Suggests: testthat
 License: MIT + file LICENSE
 Encoding: UTF-8

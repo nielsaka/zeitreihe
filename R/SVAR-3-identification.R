@@ -1,14 +1,129 @@
 '
-# TODO
 # add tests and doc for
 
 * duplication sequence
 * duplication matrix
-* selection_matrix
 * rank_B_model
-* rank_A_model
 * rank_AB_model
 '
+###########################.
+#### utility functions ####
+###########################.
+
+#' Moore-Penrose inverse of duplication matrix `D`
+#'
+#' Simple wrapper of [MASS::ginv()].
+#'
+#' @param K Scalar integer, number of variables in the system.
+#'
+#' @return A `(K * (K + 1) / 2 x K^2)` matrix.
+duplication_matrix_ginverse <- function(K) {
+  MASS::ginv(duplication_matrix(K))
+}
+
+#' Selection matrix for imposing linear restrictions
+#'
+#' Selection matrix selecting those elements in `X` with restrictions in place.
+#' This function will create the matrix `C` in `C %*% vec(X) = c`.
+#'
+#' @param X A square matrix, the target of imposing restrictions. The restricted
+#'   elements must coincide with the values specified for `value` below. The
+#'   non-restricted elements may have `NA`s or any other value except those in
+#'   `value`.
+#' @param value A numeric vector, the values imposed on elements of `X`. May be
+#'   numeric or contain `NA`. Every element of `X` with any of these values will
+#'   be assumed to be restricted to that value.
+#' @param flatten A function, flattening the dimension of `X`. The default is to
+#'   [vec()], but in some situations may want to select unique elements of a
+#'   symmetric matrix and then [vech()] is helpful.
+#'
+#' @note This function is only able to create selection matrices for
+#'   restrictions on individual elements. Restrictions on linear combinations of
+#'   elements are not (yet) implemented.
+#'
+#' @return  A matrix containing 0s and 1s of dimension
+#'
+#' * (K^2 + K)/2 x K^2
+#'
+#' if `flatten = vec` or
+#'
+#' * (K^2 - K)/2 x (K^2 + K)/2
+#'
+#' if `flatten = vech`.
+selection_matrix <- function(X, value = 0:1, flatten = vec) {
+
+  if (dim(X)[1] != dim(X)[2]) stop("X must be a square matrix.")
+
+  X <- flatten(X)
+  is_restricted <- which(X %in% value)
+  R <- length(is_restricted)
+  L <- length(X)
+
+  if (R == L) stop("selection_matrix: all elements are restricted.")
+  if (R == 0) stop("selection_matrix: no elements are restricted.")
+
+  C <- matrix(0, R, L)
+  C[cbind(seq_len(R), is_restricted)] <- 1
+
+  return(C)
+}
+
+#' Calculate ranks for identification
+#'
+#' There are necessary and sufficient algebraic conditions for checking whether
+#' a model is (locally) identified. These conditions relate to the rank of
+#' certain matrices of first-order partial derivatives. The following functions
+#' compute those ranks.
+#'
+#' @param A A square numeric matrix, the coefficient of contemporaneous effects.
+#'   Its dimension is (K x K).
+#' @param C_A A numeric matrix, the selection matrix for imposing linear
+#'   restrictions on matrix `A`. Its dimension is (K * (K + 1) / 2 x K^2). The
+#'   default assumes all elements of `A` equal to 0 or 1 are restricted
+#'   to those values.
+#' @param SIGMA_U A square numeric matrix, the reduced-form residual
+#'   covariances. Its dimension is (K x K). The default setting assumes unit
+#'   variance of the structural shocks.
+#'
+#' @return A scalar integer. The rank of the respective partial derivative
+#'   involved in achieving identification.
+#'
+#' * For the the A-type model, the rank has to be
+#' \ifelse{latex}{\out{$K^2 + \frac{K}{2} (K + 1)$}}{K^2 + K * (K + 1) / 2}.
+#'
+#' @examples
+rank_A_model <- function(A,
+                         C_A     = selection_matrix(A),
+                         SIGMA_U = A_INV %*% t(A_INV)) {
+  K <- var_length(A)
+
+  D      <- duplication_matrix(K)
+  D_GINV <- duplication_matrix_ginverse(K)
+  A_INV  <- solve(A)
+  C_s    <- selection_matrix(diag(NA, K), flatten = vech)
+
+  DERIVATIVE <-
+    cbind(
+      rbind(
+        - 2 * D_GINV %*% (SIGMA_U %x% A_INV),
+        C_A,
+        matrix(0, nrow = nrow(C_s), ncol = ncol(C_A))
+      ),
+      rbind(
+        D_GINV %*% (A_INV %x% A_INV) %*% D,
+        matrix(0, nrow = nrow(C_A), ncol = ncol(C_s)),
+        C_s
+      )
+    )
+
+  qr(DERIVATIVE)$rank
+}
+
+
+
+##################.
+#### OLD CODE ####
+##################.
 
 ###############################################################################.
 # tests
