@@ -75,12 +75,15 @@ selection_matrix <- function(X, value = 0:1, flatten = vec) {
 #' certain matrices of first-order partial derivatives. The following functions
 #' compute those ranks.
 #'
-#' @param A A square numeric matrix, the coefficient of contemporaneous effects.
-#'   Its dimension is (K x K).
-#' @param C_A A numeric matrix, the selection matrix for imposing linear
-#'   restrictions on matrix `A`. Its dimension is (K * (K + 1) / 2 x K^2). The
-#'   default assumes all elements of `A` equal to 0 or 1 are restricted
-#'   to those values.
+#' @param A A square numeric matrix, the coefficient of contemporaneous effects
+#'   between endogenous variables. Its dimension is (K x K).
+#' @param B A square numeric matrix, the coefficient of contemporaneous effects
+#'   of structural shocks on endogenous variables. Its dimension is (K x
+#'   K).
+#' @param C_A,C_B A numeric matrix, the selection matrix for imposing linear
+#'   restrictions on matrix `A` or `B`. Its dimension is (K * (K + 1) / 2 x
+#'   K^2). The default assumes all elements of `A` or `B` equal to 0 or 1 are
+#'   restricted to those values.
 #' @param SIGMA_U A square numeric matrix, the reduced-form residual
 #'   covariances. Its dimension is (K x K). The default setting assumes unit
 #'   variance of the structural shocks.
@@ -91,7 +94,13 @@ selection_matrix <- function(X, value = 0:1, flatten = vec) {
 #' * For the the A-type model, the rank has to be
 #' \ifelse{latex}{\out{$K^2 + \frac{K}{2} (K + 1)$}}{K^2 + K * (K + 1) / 2}.
 #'
-#' @examples
+#' * For the the B-type model, the rank has to be
+#' \ifelse{latex}{\out{$K^2$}}{K^2}.
+#'
+#' @name rank_condition
+NULL
+
+#' @rdname rank_condition
 rank_A_model <- function(A,
                          C_A     = selection_matrix(A),
                          SIGMA_U = A_INV %*% t(A_INV)) {
@@ -119,7 +128,21 @@ rank_A_model <- function(A,
   qr(DERIVATIVE)$rank
 }
 
+#' @rdname rank_condition
+rank_B_model <- function(B, C_B = selection_matrix(B)) {
 
+  K <- var_length(B)
+
+  D_PLUS <- duplication_matrix_ginverse(K)
+  IDENT <- diag(K)
+
+  DERIVATIVE <- rbind(
+    2 * D_PLUS %*% (B %x% IDENT),
+    C_B
+  )
+
+  qr(DERIVATIVE)$rank
+}
 
 ##################.
 #### OLD CODE ####
@@ -130,6 +153,7 @@ rank_A_model <- function(A,
 # duplication_sequence(4)
 
 ###############################################################################.
+
 
 is_identifiable <- function(A = NULL, B = NULL) {
 
@@ -202,19 +226,6 @@ rank_AB_model <- function(A = NULL, B = NULL, SIGMA_u = NULL) {
   qr(big)$rank
 }
 
-rank_B_model <- function(B) {
-  K <- nrow(B)
-  Dp <- D_plus(K)
-  CB <- selection_matrix(B)
-  IK <- diag(K)
-  # browser()
-  big <- rbind(
-    2 * Dp %*% (B %x% IK),
-    CB
-  )
-  qr(big)$rank
-}
-
 ### test
 # K <- 10
 # all(duplication_sequence(K) == dupl_sequence_2(K))
@@ -282,22 +293,7 @@ is_identifiable <- function(B) {
   rank_B_model(B) == nrow(B)^2
 }
 
-
-rank_B_model <- function(B) {
-  K <- nrow(B)
-  Dp <- D_plus(K)
-  CB <- selection_matrix(B)
-  IK <- diag(K)
-  # browser()
-  big <- rbind(
-    2 * Dp %*% (B %x% IK),
-    CB
-  )
-  qr(big)$rank
-}
-
-## -----> identification !?
-
+## TEST
 B = matrix(
   c(1, 0.5, 0,
     -0.2, 1, 0,

@@ -61,11 +61,11 @@ test_that("utility functions work", {
 
 test_that("identification is correct", {
 
+  set.seed(904673)
+
   ################
   # A-type model #
   ################
-
-  set.seed(904673)
 
   K <- 3
 
@@ -102,4 +102,43 @@ test_that("identification is correct", {
   A[c(2, 4)] <- runif(2)
 
   expect_lt(rank_A_model(A), K^2 + K * (K + 1) / 2)
+
+  ################
+  # B-type model #
+  ################
+
+  K <- 3
+
+  # Cholesky
+  B <- diag(K)
+  B[lower.tri(B, diag = TRUE)] <- runif(K * (K + 1) / 2)
+
+  expect_equal(rank_B_model(B), K^2)
+
+  # Non-recursive (NOT IDENTIFIED)
+  B <- diag(runif(3))
+  B[c(2, 6, 8)] <- runif(3)
+
+  expect_equal(rank_B_model(B), K^2)
+
+  # insufficient number of restrictions (NOT IDENTIFIED)
+  B <- diag(K)
+  B[lower.tri(B, diag = TRUE)] <- runif(K * (K + 1) / 2)
+  B[1, 2] <- runif(1)
+
+  expect_lt(rank_B_model(B), K^2)
+
+  # circular (IS IDENTIFIED?)
+  B <- diag(runif(3))
+  B[c(2, 6, 7)] <- runif(3)
+
+  expect_lt(rank_B_model(B), K^2)
+
+  # partially circular (NOT IDENTIFIED)
+  B <- diag(runif(3))
+  B[c(2, 4)] <- runif(2)
+
+  expect_lt(rank_B_model(B), K^2)
+
+
 })
