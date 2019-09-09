@@ -103,8 +103,8 @@ NULL
 
 #' @rdname rank_condition
 rank_A_model <- function(A,
-                         C_A     = selection_matrix(A),
-                         SIGMA_U = A_INV %*% t(A_INV)) {
+                         SIGMA_U = A_INV %*% t(A_INV),
+                         C_A     = selection_matrix(A)) {
   K <- var_length(A)
 
   D      <- duplication_matrix(K)
@@ -148,9 +148,9 @@ rank_B_model <- function(B, C_B = selection_matrix(B)) {
 #' @rdname rank_condition
 rank_AB_model <- function(A,
                           B,
+                          SIGMA_U = A_INV %*% B %*% t(B) %*% t(A_INV),
                           C_A = selection_matrix(A),
-                          C_B = selection_matrix(B),
-                          SIGMA_U = A_INV %*% B %*% t(B) %*% t(A_INV)) {
+                          C_B = selection_matrix(B)) {
   # need it? -> better in higher level function?
   # stopifnot(
   #   K == nrow(B) && K == ncol(B),
@@ -179,34 +179,64 @@ rank_AB_model <- function(A,
   qr(DERIVATIVE)$rank
 }
 
+
+# TEST
+# ---
+
+# provide A, but no SIGMA_U
+# provide neither A nor B
+# provide same args as for rank_AB_model
+# provide non-definite / semi-definite SIGMA_U
+# provide args with non matching dimensions
+# make A and AB or B and AB not agree?
+
+# TODO specify which elements are restricted? no, only 0 and 1 possible!
+
+#' Verify whether an SVAR model is identified
+#'
+#' @inheritParams rank_condition
+#'
+#' "The default setting assumes unit variance of the structural shocks." TRUE?
+#'
+#'
+#' @return
+#' @export
+#'
+#' @examples
+is_identified <- function(A = NULL, B = NULL, SIGMA_U = NULL) {
+
+  has_A <- !is.null(A)
+  has_B <- !is.null(B)
+  has_SIGMA_U <- !is.null(SIGMA_U)
+
+  stopifnot(has_A || has_B, !has_A || has_SIGMA_U)
+
+  if(!has_B) {
+    K <- var_length(A)
+    identified_A <- rank_A_model(A, SIGMA_U) == K^2 + K*(K + 1) / 2
+    B <- t(chol(SIGMA_U))
+  }
+  if(!has_A) {
+    K <- var_length(B)
+    identified_B <- rank_B_model(B) == K^2
+    A <- diag(K)
+    SIGMA_U <- B %*% t(B)
+  }
+
+  identified <- rank_AB_model(A, B, SIGMA_U) == 2 * K^2
+
+  if (!has_B && identified_A != identified) stop("A and AB don't agree.")
+  if (!has_A && identified_B != identified) stop("B and AB don't agree.")
+
+  return(identified)
+}
+
 ##################.
 #### OLD CODE ####
 ##################.
 
 ###############################################################################.
 
-
-is_identifiable <- function(A = NULL, B = NULL) {
-
-
-  stopifnot(has_A || has_B, !has_A || has_SIGMA_u)
-
-  has_A <- !is.null(A)
-  has_B <- !is.null(B)
-
-  stopifnot(has_A && has_B)
-
-  if(!has_B) {
-    return(rank_A_model(A) == ...)
-  }
-  if(!has_A) {
-    return(rank_B_model(B) == nrow(B)^2)
-  }
-  rank_AB_model(A, B) == ..
-
-  # A and B
- #  check Helmut's book'
-}
 
 ### test
 # K <- 10
@@ -223,9 +253,8 @@ A <- matrix(
   byrow = TRUE
 )
 
+
 # selection_matrix(A)
-
-
 # D_plus(4)
 
 

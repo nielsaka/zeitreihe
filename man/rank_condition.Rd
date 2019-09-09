@@ -7,27 +7,26 @@
 \alias{rank_AB_model}
 \title{Calculate ranks for identification}
 \usage{
-rank_A_model(A, C_A = selection_matrix(A), SIGMA_U = A_INV \%*\%
-  t(A_INV))
+rank_A_model(A, SIGMA_U = A_INV \%*\% t(A_INV),
+  C_A = selection_matrix(A))
 
 rank_B_model(B, C_B = selection_matrix(B))
 
-rank_AB_model(A, B, C_A = selection_matrix(A),
-  C_B = selection_matrix(B), SIGMA_U = A_INV \%*\% B \%*\% t(B) \%*\%
-  t(A_INV))
+rank_AB_model(A, B, SIGMA_U = A_INV \%*\% B \%*\% t(B) \%*\% t(A_INV),
+  C_A = selection_matrix(A), C_B = selection_matrix(B))
 }
 \arguments{
 \item{A}{A square numeric matrix, the coefficient of contemporaneous effects
 between endogenous variables. Its dimension is (K x K).}
 
+\item{SIGMA_U}{A square numeric matrix, the reduced-form residual
+covariances. Its dimension is (K x K). The default setting assumes unit
+variance of the structural shocks.}
+
 \item{C_A, C_B}{A numeric matrix, the selection matrix for imposing linear
 restrictions on matrix \code{A} or \code{B}. Its dimension is (K * (K + 1) / 2 x
 K^2). The default assumes all elements of \code{A} or \code{B} equal to 0 or 1 are
 restricted to those values.}
-
-\item{SIGMA_U}{A square numeric matrix, the reduced-form residual
-covariances. Its dimension is (K x K). The default setting assumes unit
-variance of the structural shocks.}
 
 \item{B}{A square numeric matrix, the coefficient of contemporaneous effects
 of structural shocks on endogenous variables. Its dimension is (K x
