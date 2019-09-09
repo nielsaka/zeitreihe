@@ -62,31 +62,32 @@ test_that("utility functions work", {
 test_that("identification is correct", {
 
   set.seed(904673)
+  K <- 3
 
   ################
   # A-type model #
   ################
 
-  K <- 3
+  required_rank_A <- K^2 + K * (K + 1) / 2
 
   # Cholesky
   A <- diag(K)
   A[lower.tri(A)] <- runif(K * (K - 1) / 2)
 
-  expect_equal(rank_A_model(A), K^2 + K * (K + 1) / 2)
+  expect_equal(rank_A_model(A), required_rank_A)
 
   # Non-recursive
   A <- diag(K)
   A[c(2, 6, 8)] <- runif(3)
 
-  expect_equal(rank_A_model(A), K^2 + K * (K + 1) / 2)
+  expect_equal(rank_A_model(A), required_rank_A)
 
   # insufficient number of restrictions (NOT IDENTIFIED)
   A <- diag(K)
   A[lower.tri(A)] <- runif(K * (K - 1) / 2)
   A[1, 2] <- runif(1)
 
-  expect_lt(rank_A_model(A), K^2 + K * (K + 1) / 2)
+  expect_lt(rank_A_model(A), required_rank_A)
 
   # circular (IS IDENTIFIED?)
   A <- diag(K)
@@ -95,50 +96,93 @@ test_that("identification is correct", {
   A_INV <- solve(A)
   SIGMA_U <- A_INV %*% diag(runif(K)) %*% t(A_INV)
 
-  expect_lt(rank_A_model(A, SIGMA_U = SIGMA_U), K^2 + K * (K + 1) / 2)
+  expect_lt(rank_A_model(A, SIGMA_U = SIGMA_U), required_rank_A)
 
   # partially circular (NOT IDENTIFIED)
   A <- diag(K)
   A[c(2, 4)] <- runif(2)
 
-  expect_lt(rank_A_model(A), K^2 + K * (K + 1) / 2)
+  expect_lt(rank_A_model(A), required_rank_A)
 
   ################
   # B-type model #
   ################
 
-  K <- 3
+  required_rank_B <- K^2
 
   # Cholesky
   B <- diag(K)
   B[lower.tri(B, diag = TRUE)] <- runif(K * (K + 1) / 2)
 
-  expect_equal(rank_B_model(B), K^2)
+  expect_equal(rank_B_model(B), required_rank_B)
 
   # Non-recursive (NOT IDENTIFIED)
   B <- diag(runif(3))
   B[c(2, 6, 8)] <- runif(3)
 
-  expect_equal(rank_B_model(B), K^2)
+  expect_equal(rank_B_model(B), required_rank_B)
 
   # insufficient number of restrictions (NOT IDENTIFIED)
   B <- diag(K)
   B[lower.tri(B, diag = TRUE)] <- runif(K * (K + 1) / 2)
   B[1, 2] <- runif(1)
 
-  expect_lt(rank_B_model(B), K^2)
+  expect_lt(rank_B_model(B), required_rank_B)
 
   # circular (IS IDENTIFIED?)
   B <- diag(runif(3))
   B[c(2, 6, 7)] <- runif(3)
 
-  expect_lt(rank_B_model(B), K^2)
+  expect_lt(rank_B_model(B), required_rank_B)
 
   # partially circular (NOT IDENTIFIED)
   B <- diag(runif(3))
   B[c(2, 4)] <- runif(2)
 
-  expect_lt(rank_B_model(B), K^2)
+  expect_lt(rank_B_model(B), required_rank_B)
 
+  #################
+  # AB-type model #
+  #################
+
+  required_rank_AB <- 2 * K^2
+
+  # A Cholesky and B diagonal
+  A <- diag(K)
+  B <- diag(runif(K))
+  A[lower.tri(A)] <- runif(K * (K - 1) / 2)
+
+  expect_equal(rank_AB_model(A, B) - required_rank_AB,
+               rank_A_model(A) - required_rank_A)
+
+  # One restriction less (NOT IDENTIFIED)
+  AA <- A
+  AA[1, 3] <- runif(1)
+
+  expect_lt(rank_AB_model(AA, B), required_rank_AB)
+
+  BB <- B
+  BB[2, 1] <- runif(1)
+  expect_lt(rank_AB_model(A, BB), required_rank_AB)
+
+  # circular (IS IDENTIFIED)
+
+  AA[3, 1] <- 0
+  expect_equal(rank_AB_model(AA, B) - required_rank_AB,
+               rank_A_model(AA) - required_rank_A)
+
+  # partially circular (NOT IDENTIFIED)
+
+  AA[4] <- AA[6]
+  AA[c(6, 7)] <- 0
+
+  expect_lt(rank_AB_model(AA, B), required_rank_AB)
+
+  # with one unit variance restriction, identified again
+
+  BB <- B
+  BB[1] <- 1
+
+  expect_equal(rank_AB_model(AA, BB), required_rank_AB)
 
 })

@@ -1,11 +1,3 @@
-'
-# add tests and doc for
-
-* duplication sequence
-* duplication matrix
-* rank_B_model
-* rank_AB_model
-'
 ###########################.
 #### utility functions ####
 ###########################.
@@ -59,7 +51,9 @@ selection_matrix <- function(X, value = 0:1, flatten = vec) {
   R <- length(is_restricted)
   L <- length(X)
 
-  if (R == L) stop("selection_matrix: all elements are restricted.")
+  # sometimes all elements are restricted
+  # often happens in AB-model
+  # if (R == L) stop("selection_matrix: all elements are restricted.")
   if (R == 0) stop("selection_matrix: no elements are restricted.")
 
   C <- matrix(0, R, L)
@@ -75,6 +69,9 @@ selection_matrix <- function(X, value = 0:1, flatten = vec) {
 #' certain matrices of first-order partial derivatives. The following functions
 #' compute those ranks.
 #'
+#' Note that `rank_AB_model` nests both `rank_A_model` and `rank_B_model` if
+#' supplied with the appropriate arguments.
+#'
 #' @param A A square numeric matrix, the coefficient of contemporaneous effects
 #'   between endogenous variables. Its dimension is (K x K).
 #' @param B A square numeric matrix, the coefficient of contemporaneous effects
@@ -89,13 +86,17 @@ selection_matrix <- function(X, value = 0:1, flatten = vec) {
 #'   variance of the structural shocks.
 #'
 #' @return A scalar integer. The rank of the respective partial derivative
-#'   involved in achieving identification.
+#'   involved in achieving identification. For successful identification, the
+#'   rank must be equal to the number of unidentified parameters.
 #'
 #' * For the the A-type model, the rank has to be
 #' \ifelse{latex}{\out{$K^2 + \frac{K}{2} (K + 1)$}}{K^2 + K * (K + 1) / 2}.
 #'
 #' * For the the B-type model, the rank has to be
 #' \ifelse{latex}{\out{$K^2$}}{K^2}.
+#'
+#' * For the the AB-type model, the rank has to be
+#' \ifelse{latex}{\out{$2K^2$}}{2K^2}.
 #'
 #' @name rank_condition
 NULL
@@ -144,18 +145,51 @@ rank_B_model <- function(B, C_B = selection_matrix(B)) {
   qr(DERIVATIVE)$rank
 }
 
+#' @rdname rank_condition
+rank_AB_model <- function(A,
+                          B,
+                          C_A = selection_matrix(A),
+                          C_B = selection_matrix(B),
+                          SIGMA_U = A_INV %*% B %*% t(B) %*% t(A_INV)) {
+  # need it? -> better in higher level function?
+  # stopifnot(
+  #   K == nrow(B) && K == ncol(B),
+  #   K == nrow(A) && K == ncol(A),
+  #   K == nrow(SIGMA_u) && isSymmetric(SIGMA_u)
+  # )
+
+  K <- var_length(A)
+  D_PLUS <- duplication_matrix_ginverse(K)
+  A_INV <- solve(A)
+
+  DERIVATIVE <-
+    cbind(
+      rbind(
+        -2 * D_PLUS %*% (SIGMA_U %x% A_INV),
+        C_A,
+        matrix(0, nrow = nrow(C_B), ncol = ncol(C_A))
+      ),
+      rbind(
+        2 * D_PLUS %*% ((A_INV %*% B) %x% A_INV),
+        matrix(0, nrow = nrow(C_A), ncol = ncol(C_B)),
+        C_B
+      )
+    )
+
+  qr(DERIVATIVE)$rank
+}
+
 ##################.
 #### OLD CODE ####
 ##################.
 
 ###############################################################################.
-# tests
-# duplication_sequence(4)
-
-###############################################################################.
 
 
 is_identifiable <- function(A = NULL, B = NULL) {
+
+
+  stopifnot(has_A || has_B, !has_A || has_SIGMA_u)
 
   has_A <- !is.null(A)
   has_B <- !is.null(B)
@@ -172,58 +206,6 @@ is_identifiable <- function(A = NULL, B = NULL) {
 
   # A and B
  #  check Helmut's book'
-}
-
-# NOT SURE IF AB CAN REALLY BE NESTED IN A-MODEL!
-rank_AB_model <- function(A = NULL, B = NULL, SIGMA_u = NULL) {
-
-  has_A <- !is.null(A)
-  has_B <- !is.null(B)
-  has_SIGMA_u <- !is.null(SIGMA_u)
-
-  stopifnot(has_A || has_B, !has_A || has_SIGMA_u)
-
-  if (!has_A) {
-    K <- nrow(B)
-    A <- diag(K)
-    SIGMA_u <- diag(K) # TODO: DOES THIS MAKE SENSE?
-  }
-  if (!has_B) {
-    K <- nrow(A)
-    B <- diag(K)
-  }
-  if (has_A && has_B) {
-    K <- nrow(A)
-  }
-
-  stopifnot(
-    K == nrow(B) && K == ncol(B),
-    K == nrow(A) && K == ncol(A),
-    K == nrow(SIGMA_u) && isSymmetric(SIGMA_u)
-  )
-
-  D_p <- duplication_matrix_ginverse(K)
-
-  CONTINUE:
-    C_A <- selection_matrix(A) # C_A
-  C_B <- selection_matrix(B)
-  #C_s <- selection_matrix(SIGMA) # C_\sigma
-
-  A_inv <- solve(A)
-
-  BIG <- cbind(  # FIX -> use AB notation / condition
-    rbind(
-      -2 * D_p %*% (SIGMA_u %x% solve(A)),
-      C_A,
-      0
-    ),
-    rbind(
-      Dp %*% (A_inv %x% A_inv) %*% Dp,
-      0,
-      C_s
-    )
-  )
-  qr(big)$rank
 }
 
 ### test

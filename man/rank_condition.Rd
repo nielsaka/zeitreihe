@@ -4,12 +4,17 @@
 \alias{rank_condition}
 \alias{rank_A_model}
 \alias{rank_B_model}
+\alias{rank_AB_model}
 \title{Calculate ranks for identification}
 \usage{
 rank_A_model(A, C_A = selection_matrix(A), SIGMA_U = A_INV \%*\%
   t(A_INV))
 
 rank_B_model(B, C_B = selection_matrix(B))
+
+rank_AB_model(A, B, C_A = selection_matrix(A),
+  C_B = selection_matrix(B), SIGMA_U = A_INV \%*\% B \%*\% t(B) \%*\%
+  t(A_INV))
 }
 \arguments{
 \item{A}{A square numeric matrix, the coefficient of contemporaneous effects
@@ -30,12 +35,15 @@ K).}
 }
 \value{
 A scalar integer. The rank of the respective partial derivative
-involved in achieving identification.
+involved in achieving identification. For successful identification, the
+rank must be equal to the number of unidentified parameters.
 \itemize{
 \item For the the A-type model, the rank has to be
 \ifelse{latex}{\out{$K^2 + \frac{K}{2} (K + 1)$}}{K^2 + K * (K + 1) / 2}.
 \item For the the B-type model, the rank has to be
 \ifelse{latex}{\out{$K^2$}}{K^2}.
+\item For the the AB-type model, the rank has to be
+\ifelse{latex}{\out{$2K^2$}}{2K^2}.
 }
 }
 \description{
@@ -43,4 +51,8 @@ There are necessary and sufficient algebraic conditions for checking whether
 a model is (locally) identified. These conditions relate to the rank of
 certain matrices of first-order partial derivatives. The following functions
 compute those ranks.
+}
+\details{
+Note that \code{rank_AB_model} nests both \code{rank_A_model} and \code{rank_B_model} if
+supplied with the appropriate arguments.
 }
