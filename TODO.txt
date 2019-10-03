@@ -19,7 +19,21 @@ TODO
 8.port code from mcs project -> forecasts + forecast evaluation of AR(p) processes
 9. extensive testing -> more robust and complete sanity checks
 10. clean up testing files
-
+11. check out other packages:
+	VAR
+	BVAR
+	svars
+	vars
+	Var.etp
+	bvartools
+	mlVAR
+	VARsignR
+	graphicalVAR
+	MTS
+	mAr
+	sparsevar
+	tsDyn
+	
 ----
 DONE
 ----
