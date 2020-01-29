@@ -23,15 +23,17 @@ symmetric matrix and then \code{\link[=vech]{vech()}} is helpful.}
 \value{
 A matrix containing 0s and 1s of dimension
 \itemize{
-\item (K^2 + K)/2 x K^2
+\item R x K^2
 }
 
 if \code{flatten = vec} or
 \itemize{
-\item (K^2 - K)/2 x (K^2 + K)/2
+\item R x (K^2 + K)/2
 }
 
-if \code{flatten = vech}.
+if \code{flatten = vech}. The scalar R is the number of restrictions and K the
+number of variables, i.e. K is the number of both the rows and the columns of
+\code{X}.
 }
 \description{
 Selection matrix selecting those elements in \code{X} with restrictions in place.
@@ -41,4 +43,12 @@ This function will create the matrix \code{C} in \code{C \%*\% vec(X) = c}.
 This function is only able to create selection matrices for
 restrictions on individual elements. Restrictions on linear combinations of
 elements are not (yet) implemented.
+}
+\examples{
+set.seed(8191)
+K <- 4
+A <- matrix(rnorm(K^2), K, K)
+A[sample(1:K^2, K * (K-1) / 2)] <- 0
+selection_matrix(A)
+
 }

@@ -5,7 +5,7 @@
 \alias{rank_A_model}
 \alias{rank_B_model}
 \alias{rank_AB_model}
-\title{Calculate ranks for identification}
+\title{Calculate matrix ranks for identification}
 \usage{
 rank_A_model(A, SIGMA_U = A_INV \%*\% t(A_INV),
   C_A = selection_matrix(A))
@@ -54,4 +54,21 @@ compute those ranks.
 \details{
 Note that \code{rank_AB_model} nests both \code{rank_A_model} and \code{rank_B_model} if
 supplied with the appropriate arguments.
+}
+\examples{
+set.seed(819)
+K <- 4
+A <- matrix(rnorm(K^2), K, K)
+A[sample((1:K^2)[-seq(1, K^2, K+1)], K * (K-1) / 2)] <- 0
+diag(A) <- 1
+A
+SIGMA_U <- solve(A) \%*\% t(solve(A))
+rank_A_model(A)
+is_identified(A, SIGMA_U = SIGMA_U)
+
+K <- 3
+A <- matrix(rnorm(K^2), K, K)
+A[c(3, 6, 7)] <- 0
+A[c(1, 5, 9)] <- 1
+
 }

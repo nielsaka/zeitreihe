@@ -21,3 +21,6 @@ variance of the structural shocks.}
 \description{
 Verify whether an SVAR model is identified
 }
+\note{
+"The default setting assumes unit variance of the structural shocks." TRUE?
+}

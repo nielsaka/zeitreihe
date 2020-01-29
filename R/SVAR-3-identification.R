@@ -35,13 +35,23 @@ duplication_matrix_ginverse <- function(K) {
 #'
 #' @return  A matrix containing 0s and 1s of dimension
 #'
-#' * (K^2 + K)/2 x K^2
+#' * R x K^2
 #'
 #' if `flatten = vec` or
 #'
-#' * (K^2 - K)/2 x (K^2 + K)/2
+#' * R x (K^2 + K)/2
 #'
-#' if `flatten = vech`.
+#' if `flatten = vech`. The scalar R is the number of restrictions and K the
+#' number of variables, i.e. K is the number of both the rows and the columns of
+#' `X`.
+#'
+#' @examples
+#' set.seed(8191)
+#' K <- 4
+#' A <- matrix(rnorm(K^2), K, K)
+#' A[sample(1:K^2, K * (K-1) / 2)] <- 0
+#' selection_matrix(A)
+#'
 selection_matrix <- function(X, value = 0:1, flatten = vec) {
 
   if (dim(X)[1] != dim(X)[2]) stop("X must be a square matrix.")
@@ -62,7 +72,7 @@ selection_matrix <- function(X, value = 0:1, flatten = vec) {
   return(C)
 }
 
-#' Calculate ranks for identification
+#' Calculate matrix ranks for identification
 #'
 #' There are necessary and sufficient algebraic conditions for checking whether
 #' a model is (locally) identified. These conditions relate to the rank of
@@ -97,6 +107,24 @@ selection_matrix <- function(X, value = 0:1, flatten = vec) {
 #'
 #' * For the the AB-type model, the rank has to be
 #' \ifelse{latex}{\out{$2K^2$}}{2K^2}.
+#'
+#' @examples
+#' set.seed(819)
+#' K <- 4
+#' A <- matrix(rnorm(K^2), K, K)
+#' A[sample((1:K^2)[-seq(1, K^2, K+1)], K * (K-1) / 2)] <- 0
+#' diag(A) <- 1
+#' A
+#' SIGMA_U <- solve(A) %*% t(solve(A))
+#' rank_A_model(A)
+#' is_identified(A, SIGMA_U = SIGMA_U)
+#'
+#' K <- 3
+#' A <- matrix(rnorm(K^2), K, K)
+#' A[c(3, 6, 7)] <- 0
+#' A[c(1, 5, 9)] <- 1
+TODO: fix error message
+Error in is_identified(A, SIGMA_U = SIGMA_U) : A and AB don't agree.
 #'
 #' @name rank_condition
 NULL
@@ -196,9 +224,8 @@ rank_AB_model <- function(A,
 #'
 #' @inheritParams rank_condition
 #'
+#' @note
 #' "The default setting assumes unit variance of the structural shocks." TRUE?
-#'
-#'
 #' @return
 #' @export
 #'
