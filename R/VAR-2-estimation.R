@@ -188,13 +188,17 @@ ols_mv <- function(Y, p, const = TRUE) {
 #' @export
 #'
 #' @examples
-sMA_CI <- function(data, p, h, alpha, reps) {
-  K     <- ncol(data)
-  N.all <- nrow(data)
+#' data("Canada", package = "vars")
+#' B <- zeitreihe::ols_cholesky(Y = t(Canada), p = 2)
+#' IRFs <- zeitreihe::sMA_CI(Y = t(Canada), 2, 20, 0.1, 100)
+#'
+sMA_CI <- function(Y, p, h, alpha, reps) {
+  K     <- nrow(Y)
+  N.all <- ncol(Y)
   N.est <- N.all - p
-  Y.pre    <- t(data)[, seq_len(p)]
+  Y.pre    <- Y[, seq_len(p)]
 
-  VAR.hat   <- ols_mv(data, p)
+  VAR.hat   <- ols_mv(Y, p)
   U.hat     <- VAR.hat$U.hat
   BETA.hat  <- VAR.hat$BETA.hat
   B.hat     <- chol_decomp(VAR.hat$SIGMA.hat)
@@ -207,6 +211,7 @@ sMA_CI <- function(data, p, h, alpha, reps) {
   THETA.boot <- array(, c(K, K, h + 1, reps))
 
   for (r in seq_len(reps)) {
+    cat("bootstrap: repetition ", r, " out of ", reps, "\n")
     Y.boot[, seq_len(p)] <- Y.pre
     U.boot <- U.hat.demean[, sample(1:N.est, replace = TRUE)]
     if (is.matrix(Y.pre)) {
@@ -218,7 +223,7 @@ sMA_CI <- function(data, p, h, alpha, reps) {
       Y.boot[, p + i] <- BETA.hat %*% Z.iter + U.boot[, i]
       Z.iter <- c(1, as.vector(Y.boot[, rev(i + seq_len(p))]))
     }
-    VAR.boot            <- ols_mv(t(Y.boot), p)
+    VAR.boot            <- ols_mv(Y.boot, p)
     B.boot              <- chol_decomp(VAR.boot$SIGMA.hat)
     PHI.boot            <- MA_coeffs(VAR.boot$BETA.hat[, -1], h)
     THETA.boot[, , , r] <- sMA_coeffs(PHI.boot, B.boot) - THETA.hat
