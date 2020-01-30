@@ -7,6 +7,13 @@
 sMA_CI(Y, p, h, alpha, reps)
 }
 \arguments{
+\item{Y}{A \code{(K x N+p)} matrix carrying the data for estimation. There are
+\code{N} observations for each of the \code{K} variables with \code{p} pre-sample values.}
+
+\item{p}{An integer scalar. The lag length of the VAR(p) system.}
+
+\item{h}{An integer scalar, the horizon.}
+
 \item{reps}{}
 }
 \description{
@@ -14,6 +21,7 @@ Hall's percentile interval bootstrap
 }
 \examples{
 data("Canada", package = "vars")
+dim(Canada)
 B <- zeitreihe::ols_cholesky(Y = t(Canada), p = 2)
 IRFs <- zeitreihe::sMA_CI(Y = t(Canada), 2, 20, 0.1, 100)
 

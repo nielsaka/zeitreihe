@@ -68,7 +68,7 @@ invSPD <- function(A) {
 #'
 #' @param A A numeric matrix, the autoregressive coefficients of the VAR
 #'   process. Can either be of dimension `K x Kp` or `Kp x Kp`.
-#' @param h An integer, the horizon.
+#' @param h An integer scalar, the horizon.
 #'
 #' @details The input matrix `A` can be either in horizontally stacked format or
 #'   companion matrix format. In the former case the dimension is `K x Kp` where
@@ -198,8 +198,8 @@ ols_mv <- function(Y, p, const = TRUE) {
 ###############################################################################.
 #' Hall's percentile interval bootstrap
 #'
-#' @param data
-#' @param p
+#' @inheritParams ols_mv
+#' @inheritParams MA_coeffs
 #' @param h
 #' @param alpha
 #' @param reps
@@ -209,6 +209,7 @@ ols_mv <- function(Y, p, const = TRUE) {
 #'
 #' @examples
 #' data("Canada", package = "vars")
+#' dim(Canada)
 #' B <- zeitreihe::ols_cholesky(Y = t(Canada), p = 2)
 #' IRFs <- zeitreihe::sMA_CI(Y = t(Canada), 2, 20, 0.1, 100)
 #'

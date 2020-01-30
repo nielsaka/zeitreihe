@@ -10,7 +10,7 @@ MA_coeffs(A, h)
 \item{A}{A numeric matrix, the autoregressive coefficients of the VAR
 process. Can either be of dimension \code{K x Kp} or \code{Kp x Kp}.}
 
-\item{h}{An integer, the horizon.}
+\item{h}{An integer scalar, the horizon.}
 }
 \value{
 An array of dimension \code{(K x K x h+1)} with the matrix of moving average
