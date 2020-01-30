@@ -7,10 +7,32 @@
 MA_coeffs(A, h)
 }
 \arguments{
-\item{A}{A matrix.}
+\item{A}{A numeric matrix, the autoregressive coefficients of the VAR
+process. Can either be of dimension \code{K x Kp} or \code{Kp x Kp}.}
 
-\item{h}{An integer.}
+\item{h}{An integer, the horizon.}
+}
+\value{
+An array of dimension \code{(K x K x h+1)} with the matrix of moving average
+coefficients at horizon \code{i} stored as element \code{[, , i]}.
 }
 \description{
-Moving Average Coefficients
+Compute moving average coefficient of a VAR up to horizon \code{h} given its
+autoregressive coefficients. Particularly useful for computing impulse
+response functions.
+}
+\details{
+The input matrix \code{A} can be either in horizontally stacked format or
+companion matrix format. In the former case the dimension is \code{K x Kp} where
+\code{K} is the number of variables and \code{p} is the lag length. In that case
+\code{A = [A_1, A_2, ..., A_p]}. Alternatively, matrix \code{A} can be in companion
+matrix format. See \code{\link[=companion_format]{companion_format()}} for details.
+}
+\examples{
+data("Canada", package = "vars")
+BETA <- zeitreihe::ols_mv(Y = t(Canada), p = 2)$BETA.hat
+# drop intercept
+IRFs <- zeitreihe::MA_coeffs(A = BETA[, -1], h = 4)
+IRFs
+
 }

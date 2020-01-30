@@ -62,10 +62,30 @@ invSPD <- function(A) {
 ###############################################################################.
 #' Moving Average Coefficients
 #'
-#' @param A A matrix.
-#' @param h An integer.
+#' Compute moving average coefficient of a VAR up to horizon `h` given its
+#' autoregressive coefficients. Particularly useful for computing impulse
+#' response functions.
 #'
-#' @return
+#' @param A A numeric matrix, the autoregressive coefficients of the VAR
+#'   process. Can either be of dimension `K x Kp` or `Kp x Kp`.
+#' @param h An integer, the horizon.
+#'
+#' @details The input matrix `A` can be either in horizontally stacked format or
+#'   companion matrix format. In the former case the dimension is `K x Kp` where
+#'   `K` is the number of variables and `p` is the lag length. In that case
+#'   `A = [A_1, A_2, ..., A_p]`. Alternatively, matrix `A` can be in companion
+#'   matrix format. See [companion_format()] for details.
+#'
+#' @return An array of dimension `(K x K x h+1)` with the matrix of moving average
+#'   coefficients at horizon `i` stored as element `[, , i]`.
+#'
+#' @examples
+#' data("Canada", package = "vars")
+#' BETA <- zeitreihe::ols_mv(Y = t(Canada), p = 2)$BETA.hat
+#' # drop intercept
+#' IRFs <- zeitreihe::MA_coeffs(A = BETA[, -1], h = 4)
+#' IRFs
+#'
 #' @export
 MA_coeffs <- function(A, h){
   K <- nrow(A)
@@ -266,7 +286,7 @@ FEVD <- function(THETA) {
 #'
 #'
 #'
-#' @example
+#' @examples
 #'set.seed(8191)
 #'
 #'N <- 1E4

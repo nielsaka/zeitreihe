@@ -4,11 +4,17 @@
 \alias{sMA_CI}
 \title{Hall's percentile interval bootstrap}
 \usage{
-sMA_CI(data, p, h, alpha, reps)
+sMA_CI(Y, p, h, alpha, reps)
 }
 \arguments{
 \item{reps}{}
 }
 \description{
 Hall's percentile interval bootstrap
+}
+\examples{
+data("Canada", package = "vars")
+B <- zeitreihe::ols_cholesky(Y = t(Canada), p = 2)
+IRFs <- zeitreihe::sMA_CI(Y = t(Canada), 2, 20, 0.1, 100)
+
 }

@@ -9,3 +9,28 @@ gradient_var_init(Y, p)
 \description{
 Gradient of VAR reduced-form log-likelihood
 }
+\examples{
+set.seed(8191)
+
+N <- 1E4
+K <- 1
+p <- 1
+
+A  <- matrix(0.1, K, K * p); diag(A) <- 0.4
+Y0 <- matrix(0, K, p)
+U <- matrix(rnorm(N * K), K, N)
+
+Y <- create_varp_data(A = A, Y0 = Y0, U = U)
+
+gradient <- gradient_var_init(Y, p)
+
+args <- c(mu = rep(0, K), a = vec(A), s = vech(diag(K)))
+gradient(args)
+
+ols_fit <- ols_mv(Y, p, const = TRUE)
+
+ols_args <- c(mu = ols_fit$BETA.hat[, 1],
+          a = ols_fit$BETA.hat[, -1],
+          s = c(vech(ols_fit$SIGMA.hat)) * (N - 1 - K * p) / N)
+gradient(ols_args)
+}
