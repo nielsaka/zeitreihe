@@ -44,6 +44,92 @@ ols_cholesky <- function(Y, p) {
   chol_decomp(ols_fit$SIGMA.hat)
 }
 ###############################################################################.
+#' Title
+#'
+#' @param Y
+#' @param h
+#' @param p
+#' @param DET
+#' @param CI
+#' @param label_shocks
+#' @param norm An integer vector of length `K`. Specifies how to normalise the
+#'   sign of the impulse response functions. The `i`th element of `norm`
+#'   specifies that the sign of the `abs(norm[i])`th response to shock `i` shall
+#'   be normalised. If `norm[i]` is negative, the sign will be negative;
+#'   otherwise positive.
+#' @param cumulate An integer vector. An index vector which specifies which
+#'   response should be accumulated over the horizon `h`. Useful for variables
+#'   in (percentage) changes.
+#'
+#' @return Data frame with columns `shock`, `response`, `h`, `point` and,
+#' depending on input to `CI`, further columns with quantile estimates of the
+#' impulse response distribution.
+#' @export
+#' @section TODO: consider more general deterministic terms (breaks, trends,
+#'   seasonal dummies). Pass matrix of regressors via `DET` argument. Would have
+#'   to adjust in ols_mv() as well and allow for more general deterministic
+#'   components.
+#'
+#' @examples
+cholesky_irfs <- function(Y, p, h, DET, CI, label_shocks, norm, cumulate) {
+
+  IRFs_P <- cholesky_irfs_point(Y, p, h, DET, norm, cumulate)
+  IRFs_CI <- CI(Y, p, h, DET, norm, cumulate)
+
+  # turn into data.frame (?)
+
+  # merge
+
+  # bind in data.frame
+
+
+}
+
+cholesky_irfs_point <- function(Y, p, h, DET, norm, cumulate) {
+
+  # which response should be normalised?
+  indx <- cbind(abs(norm), seq_len(var_length(Y)))
+
+  ols_fit <- ols_mv(Y, p)
+  B <- chol_decomp(ols_fit$SIGMA.hat)
+
+  # flip sign?
+  flip <- ifelse(B[indx] * norm < 0, -1, 1)
+  B <- B %*% diag(flip)
+
+  PHI <- MA_coeffs(A = ols_fit$BETA.hat[, -1], h = h)
+  THETA <- sMA_coeffs(PHI = PHI, B = B)
+
+  # cumulate changes?
+  THETA[cumulate, , ] <-
+    aperm(apply(THETA[cumulate, , ], c(1, 2), cumsum),c(2, 3, 1))
+
+
+
+
+
+
+  # return array K x K x h
+
+}
+
+cholesky_wild_bootstrap <- function(reps, quantiles)
+  function(Y, p, h, DET, normalise, cumulate){
+
+    U <- ols_mv(...)$U
+    # resample U ...
+
+    for (r in reps) {
+      IRFs[, , , r] <- cholesky_irfs_point(Y, p, h, DET, normalise, cumulate)
+    }
+
+    # return array with K x K x h x quantiles
+
+  }
+
+
+
+###############################################################################.
 #' Initialise the Concentrated Log-Likelihood
 #'
 #' Create the concentrated log-likelihood function of a structural VAR(p) for a
