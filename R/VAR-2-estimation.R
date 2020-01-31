@@ -173,17 +173,18 @@ ols_mv <- function(Y, p, const = TRUE) {
   ynames <- if (!is.null(rownames(Y))) rownames(Y) else paste0("y", seq_len(K))
   znames <- c(znames, paste0(ynames, rep(paste0(".l", seq_len(p)), each = K)))
   cc <- if (const) 1 else numeric(0)
+  # use Y2Z() instead!
   if (p > 0) {
     Z <- rbind(cc, t(embed(t(Y), p))[, 1:N])
   } else {
     Z <- rep(cc, N)
   }
-  Y <- Y[, -seq_len(p), drop = FALSE]
+  YN <- Y[, -seq_len(p), drop = FALSE]
   rownames(Z) <- znames
   rownames(Y) <- ynames
   ZZ.inv <- invSPD(Z %*% t(Z))
-  BETA.hat  <- Y %*% t(Z) %*% ZZ.inv
-  U.hat <- Y - BETA.hat %*% Z
+  BETA.hat  <- YN %*% t(Z) %*% ZZ.inv
+  U.hat <- YN - BETA.hat %*% Z
   SIGMA.hat <- U.hat %*% t(U.hat) / (N - Kp - const)
   sigma.beta.hat <- ZZ.inv %x% SIGMA.hat
   sb.hat <- matrix(, K, Kp + const)
@@ -193,7 +194,7 @@ ols_mv <- function(Y, p, const = TRUE) {
   dimnames(sb.hat) <- dimnames(BETA.hat)
 
   list(BETA.hat = BETA.hat, SIGMA.hat = SIGMA.hat, U.hat = U.hat,
-       std.err = sb.hat)
+       std.err = sb.hat, Y = Y)
 }
 ###############################################################################.
 #' Hall's percentile interval bootstrap
