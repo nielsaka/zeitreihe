@@ -44,7 +44,7 @@ ols_cholesky <- function(Y, p) {
   chol_decomp(ols_fit$SIGMA.hat)
 }
 ###############################################################################.
-#' Title
+#' Compute Impulse Response Functions from a Cholesky Decomposition
 #'
 #' @param Y
 #' @param h
@@ -52,14 +52,14 @@ ols_cholesky <- function(Y, p) {
 #' @param DET
 #' @param CI
 #' @param label_shocks
-#' @param norm An integer vector of length `K`. Specifies how to normalise the
-#'   sign of the impulse response functions. The `i`th element of `norm`
-#'   specifies that the sign of the `abs(norm[i])`th response to shock `i` shall
-#'   be normalised. If `norm[i]` is negative, the sign will be negative;
-#'   otherwise positive.
-#' @param cumulate An integer vector. An index vector which specifies which
-#'   response should be accumulated over the horizon `h`. Useful for variables
-#'   in (percentage) changes.
+#' @param norm An integer matrix of dimension `K x K`. Specifies how to
+#'   normalise the sign of the impulse response functions. A non-zero `ij`
+#'   element of `norm` specifies that the sign of the `i`th response to shock
+#'   `j` shall be normalised. If `norm[i, j]` is negative, the sign will be
+#'   negative; otherwise positive.
+#' @param cumulate An integer vector. An index vector which specifies the
+#'   response variables to be cumulated over horizon `h`. Useful for
+#'   variables in (percentage) changes.
 #'
 #' @return Data frame with columns `shock`, `response`, `h`, `point` and,
 #' depending on input to `CI`, further columns with quantile estimates of the
@@ -71,12 +71,27 @@ ols_cholesky <- function(Y, p) {
 #'   components.
 #'
 #' @examples
+#'
+#' # normalise shocks such that response of first variable is negative on impact
+#' norm <- matrix(c(-1, 0, 0, -1, 0, 0, -1, 0, 0), 3, 3)
+#'
+#' # cumulate the response of the second variable
+#' cumulate <- 2
+#'
+#'
 cholesky_irfs <- function(Y, p, h, DET, CI, label_shocks, norm, cumulate) {
 
-  IRFs_P <- cholesky_irfs_point(Y, p, h, DET, norm, cumulate)
-  IRFs_CI <- CI(Y, p, h, DET, norm, cumulate)
+  # check inputs
+  if(max(colSums(!norm == 0)) > 1) {
+    stop("At most one non-zero element per column allowed in 'norm'.")
+  }
 
-  # turn into data.frame (?)
+  ols_fit <- ols_mv(Y, p)
+
+  IRFs_P <- cholesky_irfs_point(model, h, DET, norm, cumulate)
+  IRFs_CI <- CI(model, h, DET, norm, cumulate)
+
+  # turn into data.frame (?) or return data.frame in functions above?
 
   # merge
 
@@ -85,47 +100,70 @@ cholesky_irfs <- function(Y, p, h, DET, CI, label_shocks, norm, cumulate) {
 
 }
 
-cholesky_irfs_point <- function(Y, p, h, DET, norm, cumulate) {
-
-  # which response should be normalised?
-  indx <- cbind(abs(norm), seq_len(var_length(Y)))
-
-  ols_fit <- ols_mv(Y, p)
-  B <- chol_decomp(ols_fit$SIGMA.hat)
+cholesky_irfs_point <- function(model, h, DET, norm, cumulate) {
+  B <- chol_decomp(model$SIGMA.hat)
 
   # flip sign?
-  flip <- ifelse(B[indx] * norm < 0, -1, 1)
+  indx <- which(norm != 0)
+  flip <- ifelse(B[indx] * norm[indx] < 0, -1, 1)
   B <- B %*% diag(flip)
 
-  PHI <- MA_coeffs(A = ols_fit$BETA.hat[, -1], h = h)
+  PHI <- MA_coeffs(A = model$BETA.hat[, -1], h = h)
   THETA <- sMA_coeffs(PHI = PHI, B = B)
 
   # cumulate changes?
+  # TODO: need drop=FALSE??
   THETA[cumulate, , ] <-
-    aperm(apply(THETA[cumulate, , ], c(1, 2), cumsum),c(2, 3, 1))
+    aperm(apply(THETA[cumulate, , ], c(1, 2), cumsum), c(2, 3, 1))
 
-
-
-
-
-
-  # return array K x K x h
-
+  THETA
 }
 
-cholesky_wild_bootstrap <- function(reps, quantiles)
-  function(Y, p, h, DET, normalise, cumulate){
+cholesky_irfs_wild_bootstrap <- function(reps, quantiles, stdev, draw_eta){
 
-    U <- ols_mv(...)$U
-    # resample U ...
+  function(model, h, DET, norm, cumulate){
+
+    A  <- model$BETA.hat[, -1]
+    nu <- model$BETA.hat[, 1]
+    Y  <- model$Y
+    U  <- model$U
+
+    K <- var_length(model$U)
+    N <- obs_length(model$U)
+    p <- lag_length(A)
 
     for (r in reps) {
-      IRFs[, , , r] <- cholesky_irfs_point(Y, p, h, DET, normalise, cumulate)
+      # draw residuals and block of pre-sample obs
+      Ur <- U * t(draw_eta(N)) %x% matrix(1, K)
+      Y0 <- Y[, sample.int(N+1, 1) + 1:p - 1]
+
+      Yr <- create_varp_data(A = A, Y0 = Y0, U = Ur, nu = nu)
+      modelr <- ols_mv(Yr, p)
+
+      IRFs[, , , r] <- cholesky_irfs_point(modelr, h, DET, norm, cumulate)
     }
 
-    # return array with K x K x h x quantiles
+    # TODO: turn into data.frame?? would be easier to append quants and stdev ...
+    # return array with K x K x h x (quantiles or upper/lower sd)
+    if (!missing(quantiles)) {
+
+    }
+    if (!missing(stdev)) {
+
+    }
 
   }
+}
+
+set.seed(1234)
+
+M <- array(, dim = c(4, 5, 300))
+for (r in 1:300) {
+  M[, , r] <- sapply(1:20, function(x) rnorm(1, sd = x))
+}
+apply(M, c(1, 2), sd) # WORKS
+
+my_quants <- function(x) quantile(x, probs = quants)
 
 
 
