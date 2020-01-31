@@ -68,6 +68,7 @@ create_varp_data <- function(A, Y0, U, nu = 0) {
     # Alternatively, just use companion form. Indexing is even simpler.
     YY[, t + p] = nu + A %*% as.vector(YY[, (t+p-1):t]) + U[, t]
   }
+  dimnames(YY) <- dimnames(Y0)
   return(YY)
 }
 ###############################################################################.

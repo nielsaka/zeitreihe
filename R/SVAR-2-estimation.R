@@ -72,12 +72,30 @@ ols_cholesky <- function(Y, p) {
 #'
 #' @examples
 #'
+#' data(oil, package = "zeitreihe")
+#'
+#' Y <- t(oil)
+#' p <- 24
+#' h <- 15
+#'
+#' DET <- NULL
+#'
+#' CI <- cholesky_irfs_wild_bootstrap(reps = 2000, stdev = 1:2)
+#'
+#' label_shocks <- c(
+#'   "oil supply shock",
+#'   "aggregate demand shock",
+#'   "oil specific-demand shock"
+#' )
+#'
 #' # normalise shocks such that response of first variable is negative on impact
-#' norm <- matrix(c(-1, 0, 0, -1, 0, 0, -1, 0, 0), 3, 3)
+#' norm <- matrix(c(0, 0, 1, 0, 0, 1, 0, 0, 1), 3, 3)
 #'
-#' # cumulate the response of the second variable
-#' cumulate <- 2
+#' # cumulate the response of the first variable
+#' cumulate <- 1
 #'
+#' IRF <- cholesky_irfs(Y, p, h, DET, CI, label_shocks, norm, cumulate)
+#' IRF[IRF$shock == "oil supply shock", ]$value <- - IRF[IRF$shock == "oil supply shock", ]$value
 #'
 cholesky_irfs <- function(Y, p, h, DET, CI, label_shocks, norm, cumulate) {
 
@@ -85,43 +103,92 @@ cholesky_irfs <- function(Y, p, h, DET, CI, label_shocks, norm, cumulate) {
   if(max(colSums(!norm == 0)) > 1) {
     stop("At most one non-zero element per column allowed in 'norm'.")
   }
+  # TODO: other checks?
 
-  ols_fit <- ols_mv(Y, p)
+  model <- ols_mv(Y, p)
 
-  IRFs_P <- cholesky_irfs_point(model, h, DET, norm, cumulate)
-  IRFs_CI <- CI(model, h, DET, norm, cumulate)
+  IRFs_P <- cholesky_irfs_point(model, h, DET, label_shocks, norm, cumulate)
+  IRFs_CI <- CI(model, h, DET, label_shocks, norm, cumulate)
 
-  # turn into data.frame (?) or return data.frame in functions above?
+  IRF <- as.data.frame.table(IRFs_P)
+  colnames(IRF) <- c("response", "shock", "h", "value")
+  IRF$h <- as.numeric(levels(IRF$h))[IRF$h]
+  IRF$stat = "point"
 
-  # merge
-
-  # bind in data.frame
-
-
+  rbind(IRF, IRFs_CI)
 }
 
-cholesky_irfs_point <- function(model, h, DET, norm, cumulate) {
+#' GGplot2 theme for publications
+#'
+#' Builds on theme_classic(). (what is modified?)
+#'
+#' @return A list..
+#' @export
+theme_publish <- function() {
+  theme_classic() + #into package
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5),
+      axis.title = element_text(size = 16),
+      text = element_text(size = 15),
+      legend.key = element_rect(fill = "white", colour = "white"),
+      legend.key.size = unit(1.5, "lines"),
+      legend.title = element_text(size = 18),
+      legend.text = element_text(size = 16),
+      legend.position = "right",
+      legend.direction = "vertical",
+      legend.box = "vertical",
+      panel.grid.major = element_line(colour = "grey80"),
+      panel.border = element_blank(),
+      panel.spacing = unit(1, "lines"),
+      strip.background = element_blank(),
+      strip.placement = "outside"
+    )
+}
+
+if (FALSE) {
+library(ggplot2)
+IR.graph <- ggplot(IRF) +
+  geom_line(
+    aes(x = h, y = value),
+    data = IRF[IRF$stat == "point", ]) +
+  geom_line(
+    aes(x = h, y = value),
+    data = IRF[IRF$stat == "sdp1", ],
+    linetype = "dashed") +
+  geom_line(
+    aes(x = h, y = value),
+    data = IRF[IRF$stat == "sdm1", ],
+    linetype = "dashed") +
+  geom_hline(yintercept = 0) +
+  facet_grid(response ~ shock, scales = "free", switch = "y") +
+  theme_publish() +
+  ylab("") +
+  xlab("Horizon")
+}
+
+cholesky_irfs_point <- function(model, h, DET, label, norm, cumulate) {
   B <- chol_decomp(model$SIGMA.hat)
 
-  # flip sign?
+  # flip sign
   indx <- which(norm != 0)
   flip <- ifelse(B[indx] * norm[indx] < 0, -1, 1)
-  B <- B %*% diag(flip)
+  # B <- B %*% diag(flip)
 
   PHI <- MA_coeffs(A = model$BETA.hat[, -1], h = h)
   THETA <- sMA_coeffs(PHI = PHI, B = B)
 
-  # cumulate changes?
-  # TODO: need drop=FALSE??
+  # cumulate changes
   THETA[cumulate, , ] <-
-    aperm(apply(THETA[cumulate, , ], c(1, 2), cumsum), c(2, 3, 1))
+    aperm(apply(THETA[cumulate, , , drop = FALSE], c(1, 2), cumsum), c(2, 3, 1))
 
+  colnames(THETA) <- label
   THETA
 }
 
-cholesky_irfs_wild_bootstrap <- function(reps, quantiles, stdev, draw_eta){
+cholesky_irfs_wild_bootstrap <-
+  function(reps, quantiles = NULL, stdev = NULL, draw_eta = rnorm){
 
-  function(model, h, DET, norm, cumulate){
+  function(model, h, DET, label, norm, cumulate){
 
     A  <- model$BETA.hat[, -1]
     nu <- model$BETA.hat[, 1]
@@ -132,7 +199,11 @@ cholesky_irfs_wild_bootstrap <- function(reps, quantiles, stdev, draw_eta){
     N <- obs_length(model$U)
     p <- lag_length(A)
 
-    for (r in reps) {
+    IRFb <- array(, dim = c(K, K, h + 1, reps))
+    dimnames(IRFb) <- list(rownames(Y), label, seq_len(h+1), seq_len(reps))
+
+    for (r in seq_len(reps)) {
+      if (!r %% 100) cat("bootstrap:", r, "out of ", reps, "repetitions.\n")
       # draw residuals and block of pre-sample obs
       Ur <- U * t(draw_eta(N)) %x% matrix(1, K)
       Y0 <- Y[, sample.int(N+1, 1) + 1:p - 1]
@@ -140,32 +211,46 @@ cholesky_irfs_wild_bootstrap <- function(reps, quantiles, stdev, draw_eta){
       Yr <- create_varp_data(A = A, Y0 = Y0, U = Ur, nu = nu)
       modelr <- ols_mv(Yr, p)
 
-      IRFs[, , , r] <- cholesky_irfs_point(modelr, h, DET, norm, cumulate)
+      IRFb[, , , r] <- cholesky_irfs_point(modelr, h, DET, label, norm, cumulate)
     }
 
-    # TODO: turn into data.frame?? would be easier to append quants and stdev ...
-    # return array with K x K x h x (quantiles or upper/lower sd)
-    if (!missing(quantiles)) {
+    # summarise
+    if (!is.null(quantiles)) {
+      quants <- function(x) apply(IRFb, c(1, 2, 3), quantile, probs = x)
+      add_stat <- function(i) IRF_qn[[i]]$stat <<- paste0("q", quantiles[i])
 
+      IRF_qn <- lapply(lapply(quantiles, quants), as.data.frame.table)
+      lapply(seq_along(quantiles), add_stat)
+      IRF_qn <- do.call(rbind, IRF_qn)
+    } else {
+      IRF_qn <- NULL
     }
-    if (!missing(stdev)) {
+    if (!is.null(stdev)) {
+      add_stdev <- function(x) IRF_P + x * IRF_SD
+      sub_stdev <- function(x) IRF_P - x * IRF_SD
+      add_stat <- function(i) IRF_sdp[[i]]$stat <<- paste0("sdp", stdev[i])
+      sub_stat <- function(i) IRF_sdm[[i]]$stat <<- paste0("sdm", stdev[i])
 
+      IRF_P <- cholesky_irfs_point(model, h, DET, label_shocks, norm, cumulate)
+      IRF_SD <- apply(IRFb, c(1, 2, 3), sd)
+
+      IRF_sdp <- lapply(lapply(stdev, add_stdev), as.data.frame.table)
+      IRF_sdm <- lapply(lapply(stdev, sub_stdev), as.data.frame.table)
+
+      lapply(seq_along(stdev), add_stat)
+      lapply(seq_along(stdev), sub_stat)
+
+      IRF_sd <- rbind(do.call(rbind, IRF_sdp), do.call(rbind, IRF_sdm))
+    } else {
+      IRF_sd <- NULL
     }
+    IRF_CI <- rbind(IRF_qn, IRF_sd)
 
+    colnames(IRF_CI) <- c("response", "shock", "h", "value", "stat")
+    IRF_CI$h <- as.numeric(levels(IRF_CI$h))[IRF_CI$h]
+    IRF_CI
   }
 }
-
-set.seed(1234)
-
-M <- array(, dim = c(4, 5, 300))
-for (r in 1:300) {
-  M[, , r] <- sapply(1:20, function(x) rnorm(1, sd = x))
-}
-apply(M, c(1, 2), sd) # WORKS
-
-my_quants <- function(x) quantile(x, probs = quants)
-
-
 
 ###############################################################################.
 #' Initialise the Concentrated Log-Likelihood
