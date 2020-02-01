@@ -200,7 +200,7 @@ cholesky_irfs_wild_bootstrap <-
     p <- lag_length(A)
 
     IRFb <- array(, dim = c(K, K, h + 1, reps))
-    dimnames(IRFb) <- list(rownames(Y), label, seq_len(h+1), seq_len(reps))
+    dimnames(IRFb) <- list(rownames(Y), label, seq_len(h+1) - 1, seq_len(reps))
 
     for (r in seq_len(reps)) {
       if (!r %% 100) cat("bootstrap:", r, "out of ", reps, "repetitions.\n")
@@ -231,7 +231,7 @@ cholesky_irfs_wild_bootstrap <-
       add_stat <- function(i) IRF_sdp[[i]]$stat <<- paste0("sdp", stdev[i])
       sub_stat <- function(i) IRF_sdm[[i]]$stat <<- paste0("sdm", stdev[i])
 
-      IRF_P <- cholesky_irfs_point(model, h, DET, label_shocks, norm, cumulate)
+      IRF_P <- cholesky_irfs_point(model, h, DET, label, norm, cumulate)
       IRF_SD <- apply(IRFb, c(1, 2, 3), sd)
 
       IRF_sdp <- lapply(lapply(stdev, add_stdev), as.data.frame.table)
