@@ -1,6 +1,6 @@
 Package: zeitreihe
 Title: Simulate, Estimate, Select, and Forecast Multiple Time Series Processes
-Version: 0.0.0.9000
+Version: 0.0.1.2000
 Authors@R: person("Niels", "Aka", email = "nielsaka@outlook.com", role = c("aut", "cre"))
 Description: 
   The package provides a (random) collection of functions that are
@@ -9,7 +9,9 @@ Description:
   is driven by whatever I felt necessary to implement myself.
 Depends: R (>= 3.0.0)
 Imports: MASS
-Suggests: testthat
+Suggests: 
+  testthat,
+  ggplot2
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

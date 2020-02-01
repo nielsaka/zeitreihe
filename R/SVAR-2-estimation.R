@@ -126,54 +126,6 @@ cholesky_irfs <- function(
   rbind(IRF, IRFs_CI)
 }
 
-#' GGplot2 theme for publications
-#'
-#' Builds on theme_classic(). (what is modified?)
-#'
-#' @return A list..
-#' @export
-theme_publish <- function() {
-  theme_classic() + #into package
-    theme(
-      axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5),
-      axis.title = element_text(size = 16),
-      text = element_text(size = 15),
-      legend.key = element_rect(fill = "white", colour = "white"),
-      legend.key.size = unit(1.5, "lines"),
-      legend.title = element_text(size = 18),
-      legend.text = element_text(size = 16),
-      legend.position = "right",
-      legend.direction = "vertical",
-      legend.box = "vertical",
-      panel.grid.major = element_line(colour = "grey80"),
-      panel.border = element_blank(),
-      panel.spacing = unit(1, "lines"),
-      strip.background = element_blank(),
-      strip.placement = "outside"
-    )
-}
-
-if (FALSE) {
-library(ggplot2)
-IR.graph <- ggplot(IRF) +
-  geom_line(
-    aes(x = h, y = value),
-    data = IRF[IRF$stat == "point", ]) +
-  geom_line(
-    aes(x = h, y = value),
-    data = IRF[IRF$stat == "sdp1", ],
-    linetype = "dashed") +
-  geom_line(
-    aes(x = h, y = value),
-    data = IRF[IRF$stat == "sdm1", ],
-    linetype = "dashed") +
-  geom_hline(yintercept = 0) +
-  facet_grid(response ~ shock, scales = "free", switch = "y") +
-  theme_publish() +
-  ylab("") +
-  xlab("Horizon")
-}
-
 cholesky_irfs_point <- function(model, h, DET, label, norm, cumulate) {
   B <- chol_decomp(model$SIGMA.hat)
 
