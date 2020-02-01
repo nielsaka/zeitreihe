@@ -56,10 +56,10 @@ ols_cholesky <- function(Y, p) {
 #'   normalise the sign of the impulse response functions. A non-zero `ij`
 #'   element of `norm` specifies that the sign of the `i`th response to shock
 #'   `j` shall be normalised. If `norm[i, j]` is negative, the sign will be
-#'   negative; otherwise positive.
+#'   negative; otherwise positive. Leave unset if no normalisation should be imposed.
 #' @param cumulate An integer vector. An index vector which specifies the
 #'   response variables to be cumulated over horizon `h`. Useful for
-#'   variables in (percentage) changes.
+#'   variables in (percentage) changes. Leave unset if no cumulation is required.
 #'
 #' @return Data frame with columns `shock`, `response`, `h`, `point` and,
 #' depending on input to `CI`, further columns with quantile estimates of the
@@ -77,10 +77,11 @@ ols_cholesky <- function(Y, p) {
 #' Y <- t(oil)
 #' p <- 24
 #' h <- 15
-#'
-#' DET <- NULL
-#'
-#' CI <- cholesky_irfs_wild_bootstrap(reps = 2000, stdev = 1:2)
+#' CI <- cholesky_irfs_wild_bootstrap(
+#'   reps = 10,
+#'   quantiles = c(0.16, 0.84),
+#'   stdev = 1:2
+#' )
 #'
 #' label_shocks <- c(
 #'   "oil supply shock",
@@ -94,16 +95,23 @@ ols_cholesky <- function(Y, p) {
 #' # cumulate the response of the first variable
 #' cumulate <- 1
 #'
-#' IRF <- cholesky_irfs(Y, p, h, DET, CI, label_shocks, norm, cumulate)
+#' IRF <- cholesky_irfs(Y, p, h, CI)
 #' IRF[IRF$shock == "oil supply shock", ]$value <- - IRF[IRF$shock == "oil supply shock", ]$value
 #'
-cholesky_irfs <- function(Y, p, h, DET, CI, label_shocks, norm, cumulate) {
+cholesky_irfs <- function(
+  Y,
+  p,
+  h,
+  CI,
+  label_shocks = NULL,
+  norm = NULL,
+  cumulate = NULL,
+  DET = NULL
+) {
 
   # check inputs
-  if(max(colSums(!norm == 0)) > 1) {
-    stop("At most one non-zero element per column allowed in 'norm'.")
-  }
-  # TODO: other checks?
+  if (!is.null(DET)) warning("Deterministics beside constant not implemented.")
+  if (is.null(label_shocks)) label_shocks <- rownames(Y)
 
   model <- ols_mv(Y, p)
 
@@ -170,16 +178,23 @@ cholesky_irfs_point <- function(model, h, DET, label, norm, cumulate) {
   B <- chol_decomp(model$SIGMA.hat)
 
   # flip sign
-  indx <- which(norm != 0)
-  flip <- ifelse(B[indx] * norm[indx] < 0, -1, 1)
-  # B <- B %*% diag(flip)
+  if (sum(norm) != 0) {
+    if (max(colSums(!norm == 0)) > 1) {
+      stop("At most one non-zero element per column allowed in 'norm'.")
+    }
+    indx <- which(norm != 0)
+    flip <- ifelse(B[indx] * norm[indx] < 0, -1, 1)
+    B <- B %*% diag(flip)
+  }
 
   PHI <- MA_coeffs(A = model$BETA.hat[, -1], h = h)
   THETA <- sMA_coeffs(PHI = PHI, B = B)
 
   # cumulate changes
+  if (!is.null(cumulate)) {
   THETA[cumulate, , ] <-
     aperm(apply(THETA[cumulate, , , drop = FALSE], c(1, 2), cumsum), c(2, 3, 1))
+  }
 
   colnames(THETA) <- label
   THETA
