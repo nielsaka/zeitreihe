@@ -182,7 +182,9 @@ ols_mv <- function(Y, p, const = TRUE) {
   YN <- Y[, -seq_len(p), drop = FALSE]
   rownames(Z) <- znames
   rownames(Y) <- ynames
-  ZZ.inv <- invSPD(Z %*% t(Z))
+  # own R implementaton very slow
+  # ZZ.inv <- invSPD(Z %*% t(Z))
+  ZZ.inv <- chol2inv(chol(Z %*% t(Z)))
   BETA.hat  <- YN %*% t(Z) %*% ZZ.inv
   U.hat <- YN - BETA.hat %*% Z
   SIGMA.hat <- U.hat %*% t(U.hat) / (N - Kp - const)
