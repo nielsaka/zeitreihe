@@ -80,11 +80,7 @@ plot_irfs <- function(IRF, lty) {
   }
 
   ci_stats <- unique(IRF$stat)
-  ci_stats <- ci_stats[ci_stats != "point"]
-
-  if (!all(ci_stats %in% lty[, "stat"])) {
-    stop("Unknown stats. Configure custom statistic and linetype via 'lty'.")
-  }
+  ci_stats <- ci_stats[ci_stats %in% lty[, "stat"]]
 
   if (!require("ggplot2")) {
     stop("Package \"pkg\" needed for this function to work. Please install it.",
