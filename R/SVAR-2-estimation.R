@@ -126,6 +126,20 @@ cholesky_irfs <- function(
   rbind(IRF, IRFs_CI)
 }
 
+###############################################################################.
+#' Title
+#'
+#' @param model
+#' @param h
+#' @param DET
+#' @param label
+#' @param norm
+#' @param cumulate
+#'
+#' @return
+#' @export
+#'
+#' @examples
 cholesky_irfs_point <- function(model, h, DET, label, norm, cumulate) {
   B <- chol_decomp(model$SIGMA.hat)
 
@@ -151,11 +165,24 @@ cholesky_irfs_point <- function(model, h, DET, label, norm, cumulate) {
   colnames(THETA) <- label
   THETA
 }
-
+###############################################################################.
+#' Title
+#'
+#' @param reps
+#' @param quantiles
+#' @param stdev
+#' @param draw_eta
+#' @param seed
+#'
+#' @return
+#' @export
+#'
+#' @examples
 cholesky_irfs_wild_bootstrap <-
-  function(reps, quantiles = NULL, stdev = NULL, draw_eta = rnorm){
+  function(reps, quantiles = NULL, stdev = NULL, draw_eta = rnorm, seed = 1234){
 
   function(model, h, DET, label, norm, cumulate){
+    set.seed(seed)
 
     A  <- model$BETA.hat[, -1]
     nu <- model$BETA.hat[, 1]
