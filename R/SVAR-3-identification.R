@@ -123,8 +123,8 @@ selection_matrix <- function(X, value = 0:1, flatten = vec) {
 #' A <- matrix(rnorm(K^2), K, K)
 #' A[c(3, 6, 7)] <- 0
 #' A[c(1, 5, 9)] <- 1
-TODO: fix error message
-Error in is_identified(A, SIGMA_U = SIGMA_U) : A and AB don't agree.
+#TODO: fix error message
+#Error in is_identified(A, SIGMA_U = SIGMA_U) : A and AB don't agree.
 #'
 #' @name rank_condition
 NULL
@@ -263,7 +263,7 @@ is_identified <- function(A = NULL, B = NULL, SIGMA_U = NULL) {
 ##################.
 
 ###############################################################################.
-
+if (FALSE) {
 
 ### test
 # K <- 10
@@ -338,3 +338,5 @@ B = matrix(
     0.8, 0, 1),
   3, 3, byrow = TRUE
 )
+
+}
