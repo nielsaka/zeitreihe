@@ -145,6 +145,7 @@ draw_sign_kilian <- function(rf_model) {
     B <- rand_coeff_kilian(rf_model)
     sign_r <- colSums(B * signs > 0)
     reps <- reps + 1
+    if(!reps %% 200) cat("attempt number:", reps, "\n")
   }
   # may need to flip signs of column
   flip <- sign_r == 0
@@ -288,10 +289,10 @@ ouliaris_pagan_sign_zero <- function(rf_model, total_models) {
   #rand_coeff, check_sign, reps) {
   reps <- models <-  vector("list", total_models)
   for(i in seq_len(total_models)) {
+    cat("Draw: model number", i, "out of", total_models, "\n")
     out <- draw_sign_zero_kilian(rf_model)
     models[[i]] <- out$B
     reps[[i]] <- out$reps
-    cat("Draw: model number", i, "out of", total_models, "\n")
   }
   list(B = models, reps = reps)
 }
@@ -313,7 +314,13 @@ draw_sign_zero_kilian <- function(rf_model) {
       B <- rand_coeff_zero_kilian(rf_model)
       sign_r <- colSums(B * signs > 0)
       reps <- reps + 1
+      if(!reps %% 200) cat("attempt number:", reps, "\n")
+	    # print(B)
+	    # print(B * signs > 0)
+	    # print("---------------------")
+
     }
+    # invisible(readline(prompt="Press [enter] to continue"))
     # may need to flip signs of column
     flip <- sign_r == 0
     B[, flip] <- -1 * B[, flip]
