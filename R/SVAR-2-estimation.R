@@ -140,7 +140,7 @@ cholesky_irfs <- function(
 #' @export
 #'
 #' @examples
-cholesky_irfs_point <- function(model, h, DET, label, norm, cumulate) {
+cholesky_irfs_point <- function(model, h, DET, label = NULL, norm = 0, cumulate = NULL) {
   B <- chol_decomp(model$SIGMA.hat)
 
   # flip sign
@@ -178,10 +178,16 @@ cholesky_irfs_point <- function(model, h, DET, label, norm, cumulate) {
 #' @export
 #'
 #' @examples
+#'
+#' data(oil)
+#' oil_model <- ols_mv(Y = t(oil), p = 2)
+#'
+#' wildstrap <- cholesky_irfs_wild_bootstrap(reps = 2, stdev = 1)
+#' wildstrap(oil_model, h = 10)
 cholesky_irfs_wild_bootstrap <-
   function(reps, quantiles = NULL, stdev = NULL, draw_eta = rnorm, seed = 1234){
 
-  function(model, h, DET, label, norm, cumulate){
+  function(model, h, DET, label = NULL, norm = 0, cumulate = NULL){
     set.seed(seed)
 
     A  <- model$BETA.hat[, -1]
@@ -199,6 +205,7 @@ cholesky_irfs_wild_bootstrap <-
     for (r in seq_len(reps)) {
       if (!r %% 100) cat("bootstrap:", r, "out of ", reps, "repetitions.\n")
       # draw residuals and block of pre-sample obs
+      # note: kronecker product takes precedence
       Ur <- U * t(draw_eta(N)) %x% matrix(1, K)
       Y0 <- Y[, sample.int(N+1, 1) + 1:p - 1]
 
