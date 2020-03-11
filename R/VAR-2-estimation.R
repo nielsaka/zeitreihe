@@ -539,3 +539,73 @@ log_lik_init <- function(Y, p) {
     constant - .5 * N * ldSIGMA - .5 * sum(diag(solve(SIGMA) %*% S))
   }
 }
+
+
+
+###########################################
+# block bootstrap
+
+# model must be as returned by ols_mv
+#' Title
+#'
+#' @param model
+#' @param l
+#' @param y_start
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+#' model <- list(
+#' Y = matrix(1:14 / 10, nrow = 2, byrow = TRUE),
+#' U = matrix(1:10, nrow = 2, byrow = TRUE),
+#' BETA.hat = matrix(c(5, 5, 0.7, 0.2, 0.2, 0.7, -0.3, 0.1, 0.1, -0.3), nrow = 2))
+#'
+#' set.seed(8191)
+#' Yb <- create_block_bootstrap_data(model, l = 2)
+#' all.equal(Yb[1, 3], 5 + 0.7 * 0.2 + 0.2 * 0.9 - 0.3 * 0.1 + 0.1 * 0.8 - 0.5)
+#'
+#' # data(oil)
+#' oil_model <- ols_mv(Y = t(oil), p = 24)
+#' Yb <- create_block_bootstrap_data(oil_model, l = 5)
+#' plot(c(oil[, 1]), type = "l")
+#' lines(Yb[1, ], col = "red")
+#'
+init_block_bootstrap_data <- function(model, l, Y0 = NULL, seed = 4520) {
+  # could refactor in constructor and closure,
+  # but overhead is only 2 milliseconds
+  # with 1 million reps, that would be 30 minutes...
+
+  # read objects and infer parameters
+  Y <- model$Y
+  U <- model$U
+  A <- model$BETA.hat[, -1]
+  nu <- model$BETA.hat[, 1]
+
+  N <- obs_length(U)
+  K <- var_length(A)
+  p <- lag_length(A)
+
+  # compute parameters
+  blocks_num <- ceiling(N/l)
+  blocks_total <- N - l + 1
+  blocks <- lapply(split(U, 1:K), function(x) embed(x, l)[, l:1])
+  blocks <- lapply(blocks, scale, scale = FALSE)
+
+  function() {
+  # sample from blocks_mat
+  indx <- sample(1:blocks_total, blocks_num, replace = TRUE)
+  Ub <- do.call(rbind, lapply(blocks, function(m) c(t(m[indx, ]))[1:N]))
+
+  # create data with new residuals
+  if (is.null(Y0)) Y0 <- Y[, 1:p]
+  create_varp_data(A = A, Y0 = Y0, U = Ub, nu = nu)
+  }
+}
+# more modular? work with objects to pass around...
+# 1. bootstrap data
+# 2. compute statistic of interest
+# 3. summarise
+
+# organise as data.frame? list-columns?
